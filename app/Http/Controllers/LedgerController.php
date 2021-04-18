@@ -19,9 +19,16 @@ class LedgerController extends Controller
         //
     }
 
+    public function select() {
+        $ledgers = Ledger::with(['balance' => function($query) {
+            $query->whereDate('created_at', Carbon::now());
+        }])->get();
+        return response()->json($ledgers);
+    }
+
     public function create(Request $request) {
         $this->validate($request, [
-            'title' => 'required|unique:ledgers|max:50|min:3|alpha',
+            'title' => 'required|unique:ledgers|max:50|min:3|string',
             'group' => 'required|in:BANK,CASH,PAYABLE,RECEIVABLE,EXPENSE',
         ]);
 

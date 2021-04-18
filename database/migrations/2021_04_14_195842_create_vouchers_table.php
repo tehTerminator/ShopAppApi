@@ -17,11 +17,12 @@ class CreateVouchersTable extends Migration
             $table->id();
             $table->unsignedBigInteger('cr');
             $table->unsignedBigInteger('dr');
-            $table->foreign(['cr', 'dr'])->references('id')->on('ledgers');
+            $table->foreign('cr')->on('ledgers')->references('id');
+            $table->foreign('dr')->on('ledgers')->references('id');
             $table->string('narration');
             $table->double('amount')->default(0.00);
             $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('user_id')->on('users')->references('id');
             $table->boolean('state')->default(true);
             $table->timestamps();
         });

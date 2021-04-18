@@ -42,7 +42,7 @@ class UserController extends Controller
     public function register(Request $request) {
         $this->validate($request, [
             'displayName' => 'required|min:3|max:50',
-            'username' => 'required|min:3|max:50|alpha_num',
+            'username' => 'required|min:3|max:50|unique:users|alpha_num',
             'password' => 'required|min:3|max:50|alpha_num'
         ]);
         
@@ -55,7 +55,7 @@ class UserController extends Controller
             'password' => $hashed_password
         ]);
 
-        return response('Success');
+        return response()->json(['message'=>'User Registered Successfully']);
 
     }
 

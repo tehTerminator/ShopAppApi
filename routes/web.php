@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Balance;
 use App\Models\Ledger;
 use App\Models\User;
 use Carbon\Carbon;
@@ -29,19 +28,15 @@ $router->group(['prefix' => 'api'], function () use ($router) {
     });
 });
 
-$router->group(['prefix'=>'user'], function() use ($router) {
+$router->group(['prefix'=>'users'], function() use ($router) {
+    $router->post('login', ['uses' => 'UserController@login']);
+    $router->put('create', ['uses' => 'UserController@register']);
     $router->get('/', function() {
         return response()->json(User::all());
     });
-    $router->post('login', ['uses' => 'UserController@login']);
-    $router->put('register', ['uses' => 'UserController@register']);
 });
 
-$router->group(['prefix'=>'ledger'], function() use ($router) {
-    $router->get('/', function() {
-        $ledgers = Ledger::with(['balance' => function($query) {
-            $query->whereDate('created_at', Carbon::now());
-        }])->get();
-        return response()->json($ledgers);
-    });
+$router->group(['prefix'=>'ledgers'], function() use ($router) {
+    $router->get('/', ['uses' => 'LedgerController@select']);
+    $router->put('create', ['uses' => 'LedgerController@create']);
 });
