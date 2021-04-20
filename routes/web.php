@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Customer;
+use App\Models\Invoice;
 use App\Models\PosItem;
 use App\Models\PosTemplate;
 use App\Models\Product;
@@ -94,5 +95,18 @@ $router->group(['prefix'=>'customers'], function() use ($router) {
     $router->delete('delete/{id}', function($id) {
         Customer::findOrFail($id)->delete();
         return response()->json(['message' => 'Customer Deleted Successfully']);
+    });
+});
+
+$router->group(['prefix'=>'invoices'], function() use ($router) {
+    $router->get('', function() {
+        return response()->json(Invoice::all());
+    });
+    $router->put('create', ['uses' => 'InvoiceController@create']);
+    $router->post('update', ['uses' => 'InvoiceController@update']);
+    $router->delete('delete/{id}', function($id) {
+        // Invoice::findOrFail($id)->delete();
+        // return response()->json(['message' => 'Invoice Deleted Successfully']);
+        return response('Trasactions Not Implemented Yet');
     });
 });
