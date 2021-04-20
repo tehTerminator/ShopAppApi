@@ -15,11 +15,11 @@ class Voucher extends Model {
         'cr', 'dr', 'narration', 'amount', 'user_id'
     ];
 
-    public function creditors() {
+    public function creditor() {
         return $this->hasOne(Ledger::class, 'id', 'cr');
     }
 
-    public function debtors() {
+    public function debtor() {
         return $this->hasOne(Ledger::class, 'id', 'dr');
     }
 }
