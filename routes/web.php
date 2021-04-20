@@ -4,6 +4,7 @@ use App\Models\PosItem;
 use App\Models\PosTemplate;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\Voucher;
 
 /** @var \Laravel\Lumen\Routing\Router $router */
 
@@ -68,5 +69,16 @@ $router->group(['prefix'=>'template'], function () use ($router) {
     $router->delete('delete/{id}', function($id) {
         PosTemplate::findOrFail($id)->delete();
         return response()->json(['message' => 'Template Deleted Success']);
+    });
+});
+
+$router->group(['prefix' => 'vouchers'], function() use ($router) {
+    $router->get('', ['uses' => 'VoucherController@select']);
+    $router->put('create', ['uses' => 'VoucherController@create']);
+    $router->post('update', ['uses' => 'VoucherController@update']);
+    $router->delete('delete/{id}', function($id) {
+        $voucher = Voucher::findOrFail($id);
+        $voucher->state = false;
+        return response()->json(['message' => 'Voucher Deleted Successfully']);
     });
 });
