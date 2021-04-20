@@ -59,7 +59,7 @@ class PosItemController extends Controller
         ]);
 
         $posItem = PosItem::findOrFail($request->input('id'));
-        $templates = PosTemplate::where('positem_id', $posItem->id)->delete();
+        PosTemplate::where('positem_id', $posItem->id)->delete();
         $posItem->delete();
 
         return response()->json(['message'=>'PosItem Deleted Successfully']);
