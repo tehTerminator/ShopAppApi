@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Customer;
 use App\Models\PosItem;
 use App\Models\PosTemplate;
 use App\Models\Product;
@@ -80,5 +81,18 @@ $router->group(['prefix' => 'vouchers'], function() use ($router) {
         $voucher = Voucher::findOrFail($id);
         $voucher->state = false;
         return response()->json(['message' => 'Voucher Deleted Successfully']);
+    });
+});
+
+
+$router->group(['prefix'=>'customers'], function() use ($router) {
+    $router->get('', function() {
+        return response()->json(Customer::all());
+    });
+    $router->put('create', ['uses' => 'CustomerController@create']);
+    $router->post('update', ['uses' => 'CustomerController@update']);
+    $router->delete('delete/{id}', function($id) {
+        Customer::findOrFail($id)->delete();
+        return response()->json(['message' => 'Customer Deleted Successfully']);
     });
 });
