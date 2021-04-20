@@ -14,8 +14,4 @@ class Product extends Model {
     protected $fillable = [
         'title', 'rate'
     ];
-
-    public function balance() {
-        return $this->hasMany(Balance::class);
-    }
 }
