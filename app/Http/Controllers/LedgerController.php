@@ -29,7 +29,7 @@ class LedgerController extends Controller
     public function create(Request $request) {
         $this->validate($request, [
             'title' => 'required|unique:ledgers|max:50|min:3|string',
-            'group' => 'required|in:BANK,CASH,PAYABLE,RECEIVABLE,EXPENSE',
+            'group' => 'required|in:BANK,CASH,PAYABLE,RECEIVABLE,EXPENSE,INCOME',
         ]);
 
         $ledger = Ledger::create([
@@ -40,14 +40,16 @@ class LedgerController extends Controller
         return response()->json($ledger);
     }
 
-    public function updateTitle(Request $request) {
+    public function update(Request $request) {
         $this->validate($request, [
             'id' => 'required|integer',
             'title' => 'required|unique:ledgers|max:50|min:3|alpha',
+            'group' => 'required|in:BANK,CASH,PAYABLE,RECEIVABLE,EXPENSE,INCOME',
         ]);
 
         $ledger = Ledger::findOrFail($request->input('id'));
         $ledger->title = $request->input('title');
+        $ledger->group = $request->input('group');
         $ledger->save();
 
         return response('Success', 200);
