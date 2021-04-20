@@ -6,8 +6,9 @@ use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class LedgerController extends Controller
+class VoucherController extends Controller
 {
+    private $ledger = 0;
     /**
      * Create a new controller instance.
      *
@@ -18,11 +19,39 @@ class LedgerController extends Controller
         //
     }
 
+    public function select(Request $request) {
+        $this->validate($request, [
+            'id' => 'integer|min:1',
+        ]);
+
+        if ($request->has('id')) {
+            return response()->json(Voucher::findOrFail($request->query('id')));
+        }
+
+        $this->validate($request, [
+            'date' => 'required|date',
+            'ledger' => 'required|integer|min:1'
+        ]);
+
+        $this->ledger = $request->query('ledger');
+
+        $voucher = Voucher::whereDate('created_at', $request->query('date'))
+        ->where('state', true)
+        ->where(function($query) {
+            $query->where('cr', $this->ledger)
+            ->orWhere('dr', $this->ledger);
+        })->with(['creditor', 'debtor'])->get();
+
+        // return response($voucher);
+
+        return response()->json($voucher);
+    }
+
     public function create(Request $request) {
         $this->validate($request, [
             'cr' => 'required|integer',
             'dr' => 'required|integer',
-            'narration' => 'alpha',
+            'narration' => 'string',
             'amount' => 'required|numeric',
         ]);
 
@@ -31,15 +60,19 @@ class LedgerController extends Controller
             return response('CR and DR Same', 400);
         }
 
-        $user_id = Auth::user()->id;
+        // $user_id = Auth::user()->id;
 
-        Voucher::create([
+        $user_id = 1; // For Testing Purpose Only Please Change in Production
+
+        $voucher = Voucher::create([
             'cr' => $request->cr,
             'dr' => $request->dr,
             'narration' => $request->narration,
             'amount' => $request->amount,
             'user_id' => $user_id
         ]);
+
+        return response()->json($voucher);
     }
 
     public function update(Request $request) {
@@ -57,13 +90,5 @@ class LedgerController extends Controller
         $voucher->amount = $request->amount;
         $voucher->narration = $request->narration;
         $voucher->save();
-    }
-
-    public function delete($id) {
-        $voucher = Voucher::findOrFail($id);
-        $voucher->state = false;
-        $voucher->save();
-
-        return response('Voucher Deleted Successfully');
     }
 }
