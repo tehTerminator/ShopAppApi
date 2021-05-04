@@ -86,9 +86,26 @@ class UserController extends Controller
         return response('Unauthorised', 401);
     }
 
+    public function selectUsername(Request $request) {
+        $this->validate($request, [
+            'username' => 'required|alpha|min:3'
+        ]);
+
+        $user = User::where('username', $request->query('username'))->count();
+        $response = ['count' => $user];
+        return response()->json($response);
+    }
+
+    public function selectDisplayName(Request $request) {
+        $this->validate($request, [
+            'displayName' => 'required|string|min:3'
+        ]);
+
+        $count = User::where('displayName', $request->query('displayName'))->count();
+        return response()->json(['count' => $count]);
+    }
+
     private function generateToken() {
         return base64_encode(random_bytes(189));
     }
-
-    //
 }
