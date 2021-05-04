@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Customer;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,6 +15,22 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // $this->call('UsersTableSeeder');
+        $this->call([
+            UserSeeder::class,
+            LedgerSeeder::class,
+            ProductSeeder::class
+        ]);
+
+        Customer::create(['title' => 'Cash','address' => 'Ashoknagar']);
+
+
+        DB::unprepared('DROP FUNCTION IF EXISTS calcTransactionAmount');
+        DB::unprepared('
+                CREATE FUNCTION calcTransactionAmount(
+                    quantity INT, 
+                    rate INT, 
+                    discount INT) RETURNS INT
+                    RETURN (quantity * rate) * (1 - discount / 100)
+        ');
     }
 }
