@@ -13,7 +13,7 @@ class Balance extends Model {
      * @var array
      */
     protected $fillable = [
-        'opening', 'closing'
+        'ledger_id', 'opening', 'closing'
     ];
 
     public function ledger() {
