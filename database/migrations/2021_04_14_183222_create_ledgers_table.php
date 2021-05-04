@@ -16,7 +16,7 @@ class CreateLedgersTable extends Migration
         Schema::create('ledgers', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->enum('group', ['BANK', 'CASH', 'PAYABLES', 'RECEIVABLES', 'EXPENSE', 'INCOME']);
+            $table->enum('kind', ['BANK', 'CASH', 'PAYABLES', 'RECEIVABLES', 'EXPENSE', 'INCOME']);
             $table->timestamps();
         });
     }

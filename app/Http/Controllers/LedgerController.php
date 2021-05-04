@@ -19,22 +19,37 @@ class LedgerController extends Controller
         //
     }
 
-    public function select() {
-        $ledgers = Ledger::with(['balance' => function($query) {
-            $query->whereDate('created_at', Carbon::now());
-        }])->get();
+    public function select(Request $request) {
+        $ledgers = 0;
+        if($request->hasAny('id')) {
+            $ledgers = Ledger::where('id', $request->query('id'))
+            ->with(['balance' => function($query) {
+                $query
+                ->whereDate('created_at', Carbon::now());
+            }])
+            ->first();
+        } else {
+            $ledgers = Ledger::with(
+                ['balance' => function($query) {
+                    $query
+                    ->whereDate('created_at', Carbon::now());
+                }
+            ])
+            ->get();
+
+        }
         return response()->json($ledgers);
     }
 
     public function create(Request $request) {
         $this->validate($request, [
             'title' => 'required|unique:ledgers|max:50|min:3|string',
-            'group' => 'required|in:BANK,CASH,PAYABLE,RECEIVABLE,EXPENSE,INCOME',
+            'kind' => 'required|in:BANK,CASH,PAYABLES,RECEIVABLES,EXPENSE,INCOME',
         ]);
 
         $ledger = Ledger::create([
             'title' => $request->title,
-            'group' => $request->group
+            'kind' => $request->kind
         ]);
 
         return response()->json($ledger);
@@ -44,12 +59,12 @@ class LedgerController extends Controller
         $this->validate($request, [
             'id' => 'required|integer',
             'title' => 'required|unique:ledgers|max:50|min:3|alpha',
-            'group' => 'required|in:BANK,CASH,PAYABLE,RECEIVABLE,EXPENSE,INCOME',
+            'kind' => 'required|in:BANK,CASH,PAYABLES,RECEIVABLES,EXPENSE,INCOME',
         ]);
 
         $ledger = Ledger::findOrFail($request->input('id'));
         $ledger->title = $request->input('title');
-        $ledger->group = $request->input('group');
+        $ledger->kind = $request->input('kind');
         $ledger->save();
 
         return response('Success', 200);
@@ -60,18 +75,18 @@ class LedgerController extends Controller
             'id' => 'required|integer',
             'opening' => 'numeric',
             'closing' => 'numeric',
-            'date' => 'required|date',
         ]);
 
+        $id = $request->input('id');
         $opening = $request->has('opening') ? $request->opening : 0;
         $closing = $request->has('closing') ? $request->closing : 0;
 
-        $balance = Balance::whereDate('created_at', $request->date)
-        ->where('ledger_id', $request->id)->first();
+        $balance = Balance::whereDate('created_at', Carbon::now())
+        ->where('ledger_id', $id)->first();
 
-        if (empty($balance)) {
+        if (!$balance) {
             Balance::create([
-                'ledger_id' => $request->id,
+                'ledger_id' => $id,
                 'opening' => $opening,
                 'closing' => $closing
             ]);
@@ -81,6 +96,11 @@ class LedgerController extends Controller
             $balance->save();
         }
 
-        return response('Success');
+        $ledger = Ledger::where('id', $id)->with(['balance' => function($query) {
+            $query
+            ->whereDate('created_at', Carbon::now());
+        }])
+        ->first();
+        return response()->json($ledger);
     }
 }
