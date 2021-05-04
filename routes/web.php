@@ -1,11 +1,9 @@
 <?php
 
 use App\Models\Customer;
-use App\Models\Invoice;
 use App\Models\PosItem;
 use App\Models\PosTemplate;
 use App\Models\Product;
-use App\Models\User;
 use App\Models\Voucher;
 
 /** @var \Laravel\Lumen\Routing\Router $router */
@@ -25,11 +23,16 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-$router->group(['prefix' => 'api'], function () use ($router) {
-    $router->get('usernames/{username}', function($username) {
-        $count = User::where('username', $username)->get()->count();
-        return response($count);
-    });
+$router->get('username', ['uses' => 'UserController@selectUsername']);
+$router->get('displayName', ['uses' => 'UserController@selectDisplayName']);
+$router->get('monthlyStats', ['uses' => 'HomeController@monthlyStats']);
+$router->get('userWiseInvoiceCount', ['uses' => 'HomeController@userWiseInvoiceCount']);
+$router->get('userWisePaymentCount', ['uses' => 'HomeController@userWisePaymentCount']);
+
+$router->group(['middleware'=>'auth'], function() use ($router) {
+    $router->get('dailyStats', ['uses' => 'HomeController@dailyStats']);
+    $router->put('balance/create', ['uses' => 'LedgerController@updateBalance']);
+    $router->get('balance', ['uses' => 'LedgerController@selectBalance']);
 });
 
 $router->group(['prefix'=>'users'], function() use ($router) {
@@ -37,13 +40,13 @@ $router->group(['prefix'=>'users'], function() use ($router) {
     $router->put('create', ['uses' => 'UserController@register']);
 });
 
-$router->group(['prefix'=>'ledgers'], function() use ($router) {
+$router->group(['prefix'=>'ledgers', 'middleware'=>'auth'], function() use ($router) {
     $router->get('', ['uses' => 'LedgerController@select']);
     $router->put('create', ['uses' => 'LedgerController@create']);
     $router->post('update', ['uses' => 'LedgerController@update']);
 });
 
-$router->group(['prefix'=>'products'], function() use ($router) {
+$router->group(['prefix'=>'products', 'middleware'=>'auth'], function() use ($router) {
     $router->get('', function() {
         return response()->json(Product::all());
     });
@@ -52,7 +55,7 @@ $router->group(['prefix'=>'products'], function() use ($router) {
     $router->delete('delete/{id}', ['uses' => 'ProductConroller@delete']);
 });
 
-$router->group(['prefix'=>'pos-items'], function() use ($router) {
+$router->group(['prefix'=>'pos-items', 'middleware'=>'auth'], function() use ($router) {
     $router->get('', ['uses' => 'PosItemController@select']);
     $router->put('create', ['uses' => 'PosItemController@create']);
     $router->post('update', ['uses' => 'PosItemController@update']);
@@ -65,7 +68,7 @@ $router->group(['prefix'=>'pos-items'], function() use ($router) {
     });
 });
 
-$router->group(['prefix'=>'template'], function () use ($router) {
+$router->group(['prefix'=>'template', 'middleware'=>'auth'], function () use ($router) {
     $router->put('create', ['uses' => 'PosTemplateController@create']);
     $router->post('update', ['uses' => 'PosTemplateController@update']);
     $router->delete('delete/{id}', function($id) {
@@ -74,7 +77,7 @@ $router->group(['prefix'=>'template'], function () use ($router) {
     });
 });
 
-$router->group(['prefix' => 'vouchers'], function() use ($router) {
+$router->group(['prefix' => 'vouchers', 'middleware'=>'auth'], function() use ($router) {
     $router->get('', ['uses' => 'VoucherController@select']);
     $router->put('create', ['uses' => 'VoucherController@create']);
     $router->post('update', ['uses' => 'VoucherController@update']);
@@ -86,7 +89,7 @@ $router->group(['prefix' => 'vouchers'], function() use ($router) {
 });
 
 
-$router->group(['prefix'=>'customers'], function() use ($router) {
+$router->group(['prefix'=>'customers', 'middleware'=>'auth'], function() use ($router) {
     $router->get('', function() {
         return response()->json(Customer::all());
     });
@@ -98,15 +101,8 @@ $router->group(['prefix'=>'customers'], function() use ($router) {
     });
 });
 
-$router->group(['prefix'=>'invoices'], function() use ($router) {
-    $router->get('', function() {
-        return response()->json(Invoice::all());
-    });
+$router->group(['prefix'=>'invoices', 'middleware'=>'auth'], function() use ($router) {
+    $router->get('', ['uses' => 'InvoiceController@select']);
     $router->put('create', ['uses' => 'InvoiceController@create']);
-    $router->post('update', ['uses' => 'InvoiceController@update']);
-    $router->delete('delete/{id}', function($id) {
-        // Invoice::findOrFail($id)->delete();
-        // return response()->json(['message' => 'Invoice Deleted Successfully']);
-        return response('Trasactions Not Implemented Yet');
-    });
+    $router->post('transactions', ['uses' => 'InvoiceController@createTransactions']);
 });
