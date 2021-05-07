@@ -60,7 +60,7 @@ class LedgerController extends Controller
     public function update(Request $request) {
         $this->validate($request, [
             'id' => 'required|integer',
-            'title' => 'required|unique:ledgers|max:50|min:3|alpha',
+            'title' => 'required|unique:ledgers|max:50|min:3|string',
             'kind' => 'required|in:BANK,CASH,PAYABLES,RECEIVABLES,EXPENSE,INCOME',
         ]);
 
@@ -69,7 +69,9 @@ class LedgerController extends Controller
         $ledger->kind = $request->input('kind');
         $ledger->save();
 
-        return response('Success', 200);
+        Cache::forget('ledgers');
+
+        return response()->json($ledger);
     }
 
     public function updateBalance(Request $request) {

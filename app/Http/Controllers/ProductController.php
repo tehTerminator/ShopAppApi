@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
@@ -42,6 +43,8 @@ class ProductController extends Controller
         $product->title = $request->input('rate');
         $product->save();
 
+        Cache::forget('products');
+
         return response()->json($product);
     }
 
@@ -52,6 +55,8 @@ class ProductController extends Controller
 
         $product = Product::findOrFail($request->input('id'));
         $product->delete();
+
+        Cache::forget('products');
 
         return response()->json(['message'=>'Product Deleted Successfully']);
     }

@@ -18,7 +18,7 @@ class CreateInvoicesTable extends Migration
             $table->unsignedBigInteger('customer_id');
             $table->unsignedBigInteger('user_id');
             $table->boolean('paid')->default(true);
-            $table->string('paymentMethod', '10')->default('CASH');
+            $table->string('paymentMethod', '100')->default('CASH');
             $table->double('amount');
             $table->timestamps();
 
