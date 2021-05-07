@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PosItem;
 use App\Models\PosTemplate;
-use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 
 class PosItemController extends Controller
@@ -20,7 +20,9 @@ class PosItemController extends Controller
     }
 
     public function select() {
-        $posItems = PosItem::with(['pos_templates'])->get();
+        $posItems = Cache::remember('posItems', 3600, function() {
+            return PosItem::with(['pos_templates'])->get();
+        });
         return response()->json($posItems);
     }
 

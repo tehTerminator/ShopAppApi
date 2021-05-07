@@ -5,6 +5,7 @@ use App\Models\PosItem;
 use App\Models\PosTemplate;
 use App\Models\Product;
 use App\Models\Voucher;
+use Illuminate\Support\Facades\Cache;
 
 /** @var \Laravel\Lumen\Routing\Router $router */
 
@@ -25,12 +26,15 @@ $router->get('/', function () use ($router) {
 
 $router->get('username', ['uses' => 'UserController@selectUsername']);
 $router->get('displayName', ['uses' => 'UserController@selectDisplayName']);
-$router->get('monthlyStats', ['uses' => 'HomeController@monthlyStats']);
-$router->get('userWiseInvoiceCount', ['uses' => 'HomeController@userWiseInvoiceCount']);
-$router->get('userWisePaymentCount', ['uses' => 'HomeController@userWisePaymentCount']);
+
 
 $router->group(['middleware'=>'auth'], function() use ($router) {
     $router->get('dailyStats', ['uses' => 'HomeController@dailyStats']);
+    $router->get('monthlyStats', ['uses' => 'HomeController@monthlyStats']);
+    $router->get('userWiseInvoiceCount', ['uses' => 'HomeController@userWiseInvoiceCount']);
+    $router->get('userWisePaymentCount', ['uses' => 'HomeController@userWisePaymentCount']);
+    $router->get('userWiseSalesCount', ['uses' => 'HomeController@userWiseSalesCount']);
+    $router->get('productWiseSaleCount', ['uses' => 'HomeController@productWiseSaleCount']);
     $router->put('balance/create', ['uses' => 'LedgerController@updateBalance']);
     $router->get('balance', ['uses' => 'LedgerController@selectBalance']);
 });
@@ -48,7 +52,10 @@ $router->group(['prefix'=>'ledgers', 'middleware'=>'auth'], function() use ($rou
 
 $router->group(['prefix'=>'products', 'middleware'=>'auth'], function() use ($router) {
     $router->get('', function() {
-        return response()->json(Product::all());
+        $products = Cache::remember('products', 600, function(){
+            return Product::all();
+        });
+        return response()->json($products);
     });
     $router->put('create', ['uses' => 'ProductController@create']);
     $router->post('update', ['uses' => 'ProductController@update']);

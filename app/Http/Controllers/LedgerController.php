@@ -6,6 +6,7 @@ use App\Models\Balance;
 use App\Models\Ledger;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class LedgerController extends Controller
 {
@@ -29,14 +30,15 @@ class LedgerController extends Controller
             }])
             ->first();
         } else {
-            $ledgers = Ledger::with(
-                ['balance' => function($query) {
-                    $query
-                    ->whereDate('created_at', Carbon::now());
-                }
-            ])
-            ->get();
-
+            $ledgers = Cache::remember('ledgers', 3600, function(){
+                return Ledger::with(
+                    ['balance' => function($query) {
+                        $query
+                        ->whereDate('created_at', Carbon::now());
+                    }
+                ])
+                ->get();
+            });
         }
         return response()->json($ledgers);
     }

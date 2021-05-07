@@ -36,11 +36,13 @@ class VoucherController extends Controller
         $this->ledger = $request->query('ledger');
 
         $voucher = Voucher::whereDate('created_at', $request->query('date'))
-        ->where('state', true)
+        ->where('state', 1)
         ->where(function($query) {
             $query->where('cr', $this->ledger)
             ->orWhere('dr', $this->ledger);
-        })->with(['creditor', 'debtor'])->get();
+        })->with(['creditor', 'debtor'])
+        ->get();
+        // ->toSql();
 
         // return response($voucher);
 
