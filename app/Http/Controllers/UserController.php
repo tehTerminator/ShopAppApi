@@ -33,6 +33,8 @@ class UserController extends Controller
             $user->token = $this->generateToken();
             $user->save();
 
+            $user = $user->fresh();
+
             return response()->json($user);
         }
 
