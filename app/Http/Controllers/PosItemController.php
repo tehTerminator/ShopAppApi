@@ -37,6 +37,8 @@ class PosItemController extends Controller
             'rate' => $request->input('rate')
         ]);
 
+        Cache::forget('posItems');
+
         return response()->json($posItem);
     }
 
@@ -51,6 +53,8 @@ class PosItemController extends Controller
         $posItem->title = $request->input('title');
         $posItem->rate = $request->input('rate');
         $posItem->save();
+
+        Cache::forget('posItems');
 
         return response()->json($posItem);
     }
