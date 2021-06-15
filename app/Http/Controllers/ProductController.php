@@ -34,13 +34,13 @@ class ProductController extends Controller
     public function update(Request $request) {
         $this->validate($request, [
             'id' => 'required|integer|min:1',
-            'title' => 'required|max:50|unique:products|string',
+            'title' => 'required|max:50|string',
             'rate' => 'required|numeric|min:1',
         ]);
 
         $product = Product::findOrFail($request->input('id'));
         $product->title = $request->input('title');
-        $product->title = $request->input('rate');
+        $product->rate = $request->input('rate');
         $product->save();
 
         Cache::forget('products');

@@ -36,8 +36,7 @@ class LedgerController extends Controller
                         $query
                         ->whereDate('created_at', Carbon::now());
                     }
-                ])
-                ->get();
+                ])->get();
             });
         }
         return response()->json($ledgers);
@@ -106,5 +105,12 @@ class LedgerController extends Controller
         }])
         ->first();
         return response()->json($ledger);
+    }
+
+    public function selectBalance(Request $request, int $id) {
+        $balance = Balance::whereDate('created_at', $request->query('date'))
+        ->where('ledger_id', $id)->first();
+
+        return response()->json($balance);
     }
 }

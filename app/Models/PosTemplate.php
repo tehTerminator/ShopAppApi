@@ -16,5 +16,4 @@ class PosTemplate extends Model {
     protected $fillable = [
         'positem_id', 'item_id', 'kind', 'rate', 'quantity'
     ];
-
 }

@@ -68,6 +68,8 @@ class PosItemController extends Controller
         PosTemplate::where('positem_id', $posItem->id)->delete();
         $posItem->delete();
 
+        Cache::forget('posItems');
+
         return response()->json(['message'=>'PosItem Deleted Successfully']);
     }
 }

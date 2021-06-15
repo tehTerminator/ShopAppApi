@@ -28,7 +28,9 @@ class InvoiceController extends Controller
         }
 
         if ($request->has('createdAt')) {
-            $invoices = Invoice::whereDate('created_at', $request->query('createdAt'))->with(['customer'])->get();
+            $invoices = Invoice::whereDate('created_at', $request->query('createdAt'))
+            ->where('user_id', $request->query('userId'))
+            ->with(['customer'])->get();
             return response()->json($invoices);
         }
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use App\Models\Customer;
 use App\Models\PosItem;
 use App\Models\PosTemplate;
@@ -24,19 +25,23 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
+
 $router->get('username', ['uses' => 'UserController@selectUsername']);
 $router->get('displayName', ['uses' => 'UserController@selectDisplayName']);
+
 
 
 $router->group(['middleware'=>'auth'], function() use ($router) {
     $router->get('dailyStats', ['uses' => 'HomeController@dailyStats']);
     $router->get('monthlyStats', ['uses' => 'HomeController@monthlyStats']);
-    $router->get('userWiseInvoiceCount', ['uses' => 'HomeController@userWiseInvoiceCount']);
-    $router->get('userWisePaymentCount', ['uses' => 'HomeController@userWisePaymentCount']);
-    $router->get('userWiseSalesCount', ['uses' => 'HomeController@userWiseSalesCount']);
+    $router->get('userWiseInvoiceCount', ['uses' => 'UserReportController@userWiseInvoiceCount']);
+    $router->get('userWisePaymentCount', ['uses' => 'UserReportController@userWisePaymentCount']);
+    $router->get('userWiseSalesCount', ['uses' => 'UserReportController@userWiseSalesCount']);
     $router->get('productWiseSaleCount', ['uses' => 'HomeController@productWiseSaleCount']);
+    $router->get('incomeExpense', ['uses' => 'HomeController@incomeExpense']);
     $router->put('balance/create', ['uses' => 'LedgerController@updateBalance']);
-    $router->get('balance', ['uses' => 'LedgerController@selectBalance']);
+    $router->get('balance/{id}', ['uses' => 'LedgerController@selectBalance']);
+    $router->get('users', function() {return User::all('id', 'displayName');});
 });
 
 $router->group(['prefix'=>'users'], function() use ($router) {
