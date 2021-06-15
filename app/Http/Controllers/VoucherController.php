@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Balance;
 use App\Models\Voucher;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class VoucherController extends Controller
 {
@@ -42,11 +42,19 @@ class VoucherController extends Controller
             ->orWhere('dr', $this->ledger);
         })->with(['creditor', 'debtor'])
         ->get();
+
+        $opening = Balance::where('ledger_id', $request->query('ledger'))
+        ->whereDate('created_at', $request->query('date'))
+        ->pluck('opening')->pop();
         // ->toSql();
+
+        if (is_null($opening)) {
+            $opening = 0;
+        }
 
         // return response($voucher);
 
-        return response()->json($voucher);
+        return response()->json(['openingBalance' => $opening, 'vouchers' => $voucher]);
     }
 
     public function create(Request $request) {
@@ -82,7 +90,7 @@ class VoucherController extends Controller
             'id' => 'required|integer',
             'cr' => 'required|integer',
             'dr' => 'required|integer',
-            'narration' => 'alpha',
+            'narration' => 'string',
             'amount' => 'required|numeric',
         ]);
 
