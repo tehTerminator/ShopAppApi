@@ -8,17 +8,20 @@ use Illuminate\Support\Facades\Auth;
 
 class VoucherService {
 
+    private $id = 0;
+
     public function select(int $id, $date) {
+        $this->id = $id;
         $voucher = Voucher::whereDate('created_at', $date)
         ->where('state', 1)
-        ->where(function($query, $id) {
-            $query->where('cr', $id)
-            ->orWhere('dr', $id);
+        ->where(function($query) {
+            $query->where('cr', $this->id)
+            ->orWhere('dr', $this->id);
         })->with(['creditor', 'debtor'])
         ->get();
 
-        $opening = Balance::where('ledger_id', $id)
-        ->whereDate('created_at', $id)
+        $opening = Balance::where('ledger_id', $this->id)
+        ->whereDate('created_at', $date)
         ->pluck('opening')->pop();
         // ->toSql();
 
