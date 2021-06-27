@@ -92,7 +92,7 @@ class LedgerService {
 
     public function autoSetOpeningBalance(int $ledger_id) {
         $balance = Balance::where('ledger_id', $ledger_id)
-        ->whereDate('create_at', Carbon::now())
+        ->whereDate('created_at', Carbon::now())
         ->first();
         if(empty($balance)) {
             $opening  = $this->getLatestClosing($ledger_id);
