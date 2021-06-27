@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Balance;
-use App\Models\Ledger;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+use App\Services\LedgerService;
 
 class LedgerController extends Controller
 {
+    private $ledgerService;
     /**
      * Create a new controller instance.
      *
@@ -18,26 +17,16 @@ class LedgerController extends Controller
     public function __construct()
     {
         //
+        $this->ledgerService = new LedgerService();
     }
 
     public function select(Request $request) {
         $ledgers = 0;
         if($request->hasAny('id')) {
-            $ledgers = Ledger::where('id', $request->query('id'))
-            ->with(['balance' => function($query) {
-                $query
-                ->whereDate('created_at', Carbon::now());
-            }])
-            ->first();
+            $id = $request->query('id');
+            $ledgers = $this->ledgerService->getLedgerById($id);
         } else {
-            $ledgers = Cache::remember('ledgers', 3600, function(){
-                return Ledger::with(
-                    ['balance' => function($query) {
-                        $query
-                        ->whereDate('created_at', Carbon::now());
-                    }
-                ])->get();
-            });
+            $ledgers = $this->ledgerService->getAllLedgers();
         }
         return response()->json($ledgers);
     }
@@ -48,11 +37,7 @@ class LedgerController extends Controller
             'kind' => 'required|in:BANK,CASH,PAYABLES,RECEIVABLES,EXPENSE,INCOME',
         ]);
 
-        $ledger = Ledger::create([
-            'title' => $request->title,
-            'kind' => $request->kind
-        ]);
-
+        $ledger = $this->ledgerService->createLedger($request->title, $request->kind);
         return response()->json($ledger);
     }
 
@@ -63,13 +48,12 @@ class LedgerController extends Controller
             'kind' => 'required|in:BANK,CASH,PAYABLES,RECEIVABLES,EXPENSE,INCOME',
         ]);
 
-        $ledger = Ledger::findOrFail($request->input('id'));
-        $ledger->title = $request->input('title');
-        $ledger->kind = $request->input('kind');
-        $ledger->save();
-
-        Cache::forget('ledgers');
-
+        $ledger = $this->ledgerService->updateLedger(
+            $request->id,
+            $request->title,
+            $request->kind
+        );
+        
         return response()->json($ledger);
     }
 
@@ -84,33 +68,13 @@ class LedgerController extends Controller
         $opening = $request->has('opening') ? $request->opening : 0;
         $closing = $request->has('closing') ? $request->closing : 0;
 
-        $balance = Balance::whereDate('created_at', Carbon::now())
-        ->where('ledger_id', $id)->first();
-
-        if (!$balance) {
-            Balance::create([
-                'ledger_id' => $id,
-                'opening' => $opening,
-                'closing' => $closing
-            ]);
-        } else {
-            $balance->opening = $opening;
-            $balance->closing = $closing;
-            $balance->save();
-        }
-
-        $ledger = Ledger::where('id', $id)->with(['balance' => function($query) {
-            $query
-            ->whereDate('created_at', Carbon::now());
-        }])
-        ->first();
+        $ledger = $this->ledgerService->updateBalance($id, $opening, $closing);
         return response()->json($ledger);
     }
 
     public function selectBalance(Request $request, int $id) {
         $balance = Balance::whereDate('created_at', $request->query('date'))
         ->where('ledger_id', $id)->first();
-
         return response()->json($balance);
     }
 }
