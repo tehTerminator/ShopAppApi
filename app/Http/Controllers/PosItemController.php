@@ -20,7 +20,7 @@ class PosItemController extends Controller
     }
 
     public function select() {
-        $posItems = Cache::remember('posItems', 3600, function() {
+        $posItems = Cache::remember('posItems', 6000, function() {
             return PosItem::with(['pos_templates'])->get();
         });
         return response()->json($posItems);

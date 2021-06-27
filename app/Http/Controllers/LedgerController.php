@@ -59,16 +59,11 @@ class LedgerController extends Controller
 
     public function updateBalance(Request $request) {
         $this->validate($request, [
-            'id' => 'required|integer',
+            'id' => 'required|integer|exists:App\Models\Ledger,id',
             'opening' => 'numeric',
             'closing' => 'numeric',
         ]);
-
-        $id = $request->input('id');
-        $opening = $request->has('opening') ? $request->opening : 0;
-        $closing = $request->has('closing') ? $request->closing : 0;
-
-        $ledger = $this->ledgerService->updateBalance($id, $opening, $closing);
+        $ledger = $this->ledgerService->updateBalance($request);
         return response()->json($ledger);
     }
 
@@ -76,5 +71,9 @@ class LedgerController extends Controller
         $balance = Balance::whereDate('created_at', $request->query('date'))
         ->where('ledger_id', $id)->first();
         return response()->json($balance);
+    }
+
+    public function test(int $id) {
+        return response($this->ledgerService->getLatestClosing($id));
     }
 }
