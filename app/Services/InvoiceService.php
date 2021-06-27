@@ -29,7 +29,7 @@ class InvoiceService {
         $invoice = Invoice::create([
             'customer_id' => $request->input('customer_id'),
             'user_id' => $user_id,
-            'paid' => $request->input('paid'),
+            'paid' => $request->boolean('paid'),
             'paymentMethod' => $request->input('paymentMethod'),
             'amount' => $request->input('amount'),
         ]);
