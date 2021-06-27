@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Balance;
 use App\Models\Voucher;
+use App\Services\VoucherService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class VoucherController extends Controller
 {
     private $ledger = 0;
+    private $service = NULL;
     /**
      * Create a new controller instance.
      *
@@ -16,7 +18,7 @@ class VoucherController extends Controller
      */
     public function __construct()
     {
-        //
+        $this->service = new VoucherService();
     }
 
     public function select(Request $request) {
@@ -34,27 +36,10 @@ class VoucherController extends Controller
         ]);
 
         $this->ledger = $request->query('ledger');
-
-        $voucher = Voucher::whereDate('created_at', $request->query('date'))
-        ->where('state', 1)
-        ->where(function($query) {
-            $query->where('cr', $this->ledger)
-            ->orWhere('dr', $this->ledger);
-        })->with(['creditor', 'debtor'])
-        ->get();
-
-        $opening = Balance::where('ledger_id', $request->query('ledger'))
-        ->whereDate('created_at', $request->query('date'))
-        ->pluck('opening')->pop();
-        // ->toSql();
-
-        if (is_null($opening)) {
-            $opening = 0;
-        }
-
-        // return response($voucher);
-
-        return response()->json(['openingBalance' => $opening, 'vouchers' => $voucher]);
+        $date = $request->query('date');
+        return response()->json(
+            $this->service->select($this->ledger, $date)
+        );
     }
 
     public function create(Request $request) {
@@ -64,24 +49,7 @@ class VoucherController extends Controller
             'narration' => 'string',
             'amount' => 'required|numeric',
         ]);
-
-        if ($request->input('cr') == $request->input('dr')) {
-            // If Creditor and Debtor are Same
-            return response('CR and DR Same', 400);
-        }
-
-        // $user_id = Auth::user()->id;
-
-        $user_id = 1; // For Testing Purpose Only Please Change in Production
-
-        $voucher = Voucher::create([
-            'cr' => $request->cr,
-            'dr' => $request->dr,
-            'narration' => $request->narration,
-            'amount' => $request->amount,
-            'user_id' => $user_id
-        ]);
-
+        $voucher = $this->service->create($request->all());
         return response()->json($voucher);
     }
 
@@ -93,12 +61,6 @@ class VoucherController extends Controller
             'narration' => 'string',
             'amount' => 'required|numeric',
         ]);
-
-        $voucher = Voucher::findOrFail($request->id);
-        $voucher->cr = $request->cr;
-        $voucher->dr = $request->dr;
-        $voucher->amount = $request->amount;
-        $voucher->narration = $request->narration;
-        $voucher->save();
+        $this->service->update($request->all());
     }
 }
