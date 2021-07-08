@@ -31,15 +31,16 @@ class VoucherController extends Controller
         }
 
         $this->validate($request, [
-            'date' => 'required|date',
+            'fromDate' => 'required|date',
             'ledger' => 'required|integer|min:1'
         ]);
 
         $this->ledger = $request->query('ledger');
-        $date = $request->query('date');
-        return response()->json(
-            $this->service->select($this->ledger, $date)
-        );
+        $from_date = $request->query('fromDate');
+        $to_date = $request->query('toDate', $from_date);
+
+        $response = $this->service->select($this->ledger, $from_date, $to_date);
+        return response()->json($response);
     }
 
     public function create(Request $request) {
