@@ -6,7 +6,9 @@ use App\Models\PosItem;
 use App\Models\PosTemplate;
 use App\Models\Product;
 use App\Models\Voucher;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 /** @var \Laravel\Lumen\Routing\Router $router */
 
@@ -40,6 +42,10 @@ $router->group(['middleware'=>'auth'], function() use ($router) {
     $router->get('balance/{id}', ['uses' => 'LedgerController@selectBalance']);
     $router->put('balance/create', ['uses' => 'LedgerController@updateBalance']);
     $router->get('users', function() {return User::all('id', 'displayName');});
+    $router->get('day-book', function(Request $request) {
+        $dayBook = DB::select('call tallyEntries(?)', [$request->query('date')]);
+        return response()->json($dayBook);
+    });
 });
 
 $router->group(['prefix'=>'users'], function() use ($router) {
