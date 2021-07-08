@@ -96,18 +96,14 @@ class LedgerService {
         ->first();
         if(empty($balance)) {
             $opening  = $this->getLatestClosing($ledger_id);
-            $credit = $this->reduceAmount($ledger_id);
-            $debit = $this->increaseAmount($ledger_id);
-            $closing = $opening - $credit + $debit;
-            $ledger = $this->updateOpeningAndClosing($ledger_id, $opening, $closing);
-            return $ledger;
         } else {
             $opening = $balance->opening;
-            $credit = $this->reduceAmount($ledger_id);
-            $debit = $this->increaseAmount($ledger_id);
-            $closing = $opening - $credit + $debit;
-            $ledger = $this->updateOpeningAndClosing($ledger_id, $opening, $closing);
         }
+        $credit = $this->reduceAmount($ledger_id);
+        $debit = $this->increaseAmount($ledger_id);
+        $closing = $opening - $credit + $debit;
+        $ledger = $this->updateOpeningAndClosing($ledger_id, $opening, $closing);
+        return $ledger;
     }
 
     public function getLatestClosing(int $ledger_id) {
