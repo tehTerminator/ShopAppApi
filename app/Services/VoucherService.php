@@ -4,16 +4,17 @@ namespace App\Services;
 
 use App\Models\Voucher;
 use App\Models\Balance;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class VoucherService {
 
     private $id = 0;
 
-    public function select(int $id, $date) {
+    public function select(int $id, $from, $to) {
         $this->id = $id;
-        $voucher = Voucher::whereDate('created_at', $date)
-        ->where('state', 1)
+        $to = Carbon::createFromFormat('Y-m-d', $to)->addDay(1);
+        $voucher = Voucher::whereBetween('created_at', [$from, $to])->where('state', 1)
         ->where(function($query) {
             $query->where('cr', $this->id)
             ->orWhere('dr', $this->id);
@@ -21,7 +22,7 @@ class VoucherService {
         ->get();
 
         $opening = Balance::where('ledger_id', $this->id)
-        ->whereDate('created_at', $date)
+        ->whereDate('created_at', $from)
         ->pluck('opening')->pop();
         // ->toSql();
 
