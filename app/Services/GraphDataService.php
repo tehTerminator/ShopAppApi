@@ -10,16 +10,16 @@ use App\Models\Ledger;
 use App\Models\Voucher;
 
 class GraphDataService {
-    private $date = NULL;
+    private $date;
 
     public function __construct()
     {
         $this->date = Carbon::now();
     }
 
-    public function monthlyStats() {
+    public function monthlyInvoiceAmount() {
         $response = Cache::remember('monthlyStats', 3600, function(){
-            $date = Carbon::now()->subDays(7);
+            $date = Carbon::now()->subDays(15);
             return Invoice::select(
                 DB::raw('sum(amount) as value'),
                 DB::raw("DATE_FORMAT(created_at, '%Y-%m-%d') as name")
@@ -30,11 +30,11 @@ class GraphDataService {
             ->get();
         });
         
-        return $response();
+        return $response;
     }
 
     public function incomeVsExpenses() {
-        $this->date = Carbon::now()->subDays(7);
+        $this->date = Carbon::now()->subDays(15);
         $graphData = Cache::remember('incomeExpense', 3600, function() {
             $data = [
                 [
@@ -74,9 +74,5 @@ class GraphDataService {
         });
 
         return $graphData;
-    }
-
-    public function userWiseInvoiceCount() {
-        
     }
 }
