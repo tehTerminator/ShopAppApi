@@ -42,6 +42,7 @@ $router->group(['middleware'=>'auth'], function() use ($router) {
     $router->get('incomeExpense', ['uses' => 'HomeController@incomeExpense']);
     $router->get('balance', ['uses' => 'LedgerController@selectBalance']);
     $router->put('balance/create', ['uses' => 'LedgerController@updateBalance']);
+    $router->post('balance/update', ['uses'=>'LedgerController@autoUpdateBalance']);
     $router->get('users', function() {return User::all('id', 'displayName');});
     $router->get('day-book', function(Request $request) {
         $dayBook = DB::select('call tallyEntries(?)', [$request->query('date')]);
