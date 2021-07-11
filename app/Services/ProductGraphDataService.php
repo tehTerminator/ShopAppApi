@@ -34,6 +34,6 @@ class ProductGraphDataService {
             ->get();
         });
 
-        return $response();
+        return $response;
     }
 }
