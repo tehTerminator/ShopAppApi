@@ -27,21 +27,18 @@ class LedgerService {
         return $ledger;
     }
 
-    public function updateBalance(Request $request) {
-        $id = $request->input('id');
-        $opening = $request->input('opening', 0);
-        $closing = $request->input('closing', 0);
-        $ledger = NULL;
-        if ($request->has(['opening', 'closing'])) {
-            $ledger = $this->updateOpeningAndClosing($id, $opening, $closing);
+    public function autoUpdateBalance() {
+        $ledgers = Ledger::whereIn('kind', ['CASH', 'BANK'])->get();
+        foreach ($ledgers as $ledger) {
+            # code...
+            $this->autoSetBalanceById($ledger->id);
         }
-        else {
-            $ledger = $this->autoSetOpeningBalance($id);
-        }
-        return $ledger;
+
+        return Balance::whereDate('created_at', Carbon::now())
+        ->with('ledger')->get();
     }
 
-    private function updateOpeningAndClosing(int $id, $opening, $closing) {
+    public function updateBalance(int $id, $opening, $closing) {
         $balance = Balance::whereDate('created_at', Carbon::now())
         ->where('ledger_id', $id)->first();
 
@@ -62,7 +59,7 @@ class LedgerService {
         return $ledger;
     }
 
-    public function autoSetOpeningBalance(int $ledger_id) {
+    public function autoSetBalanceById(int $ledger_id) {
         $balance = Balance::where('ledger_id', $ledger_id)
         ->whereDate('created_at', Carbon::now())
         ->first();
@@ -74,14 +71,14 @@ class LedgerService {
         $credit = $this->reduceAmount($ledger_id);
         $debit = $this->increaseAmount($ledger_id);
         $closing = $opening - $credit + $debit;
-        $ledger = $this->updateOpeningAndClosing($ledger_id, $opening, $closing);
+        $ledger = $this->updateBalance($ledger_id, $opening, $closing);
         return $ledger;
     }
 
     public function getLatestClosing(int $ledger_id) {
+        $yesterday = Carbon::now()->subDays(1);
         $balance  = Balance::where('ledger_id', $ledger_id)
-        ->whereDate('created_at', '<', Carbon::now())
-        ->orderBy('id', 'DESC')->first();
+        ->whereDate('created_at', $yesterday)->first();
         if(empty($balance)) {
             return 0;
         }

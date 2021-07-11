@@ -17,6 +17,6 @@ class Balance extends Model {
     ];
 
     public function ledger() {
-        return $this->hasOne(Ledger::class);
+        return $this->belongsTo(Ledger::class);
     }
 }

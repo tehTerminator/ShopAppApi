@@ -58,14 +58,18 @@ class LedgerController extends Controller
         return response()->json($ledger);
     }
 
+    public function autoUpdateBalance() {
+        return response()->json($this->ledgerService->autoUpdateBalance());
+    }
+
     public function updateBalance(Request $request) {
         $this->validate($request, [
             'id' => 'required|integer|exists:App\Models\Ledger,id',
-            'opening' => 'numeric',
-            'closing' => 'numeric',
+            'opening' => 'required|numeric',
+            'closing' => 'required|numeric',
         ]);
-        $ledger = $this->ledgerService->updateBalance($request);
-        return response()->json($ledger);
+        $balance = $this->ledgerService->updateBalance($request->id, $request->opening, $request->closing);
+        return response()->json($balance);
     }
 
     public function selectBalance(Request $request) {
