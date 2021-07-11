@@ -10,38 +10,11 @@ use App\Models\Voucher;
 use Illuminate\Http\Request;
 
 class LedgerService {
-    public function getLedgerById(int $id) {
-        $ledgers = Ledger::where('id', $id)
-        ->with(['balance' => function($query) {
-            $query
-            ->whereDate('created_at', Carbon::now());
-        }])
-        ->first();
-
-        return $ledgers;
-    }
-
-    public function getAllLedgers() {
-        $ledgers = Cache::remember('ledgers', 3600, function(){
-            return Ledger::with(
-                ['balance' => function($query) {
-                    $query
-                    ->whereDate('created_at', Carbon::now());
-                }
-            ])->get();
-        });
-
-        return $ledgers;
-    }
-
     public function createLedger(string $title, string $kind) {
         $ledger = Ledger::create([
             'title' => $title,
             'kind' => $kind
         ]);
-
-        Cache::forget('ledgers');
-
         return $ledger;
     }
 
@@ -50,8 +23,7 @@ class LedgerService {
         $ledger->title = $title;
         $ledger->kind = $kind;
         $ledger->save();
-        $ledger = $this->getLedgerById($id);
-        Cache::forget('ledgers');
+        $ledger = Ledger::find($id);
         return $ledger;
     }
 
@@ -85,7 +57,7 @@ class LedgerService {
             $balance->save();
         }
 
-        $ledger = $this->getLedgerById($id);
+        $ledger = Ledger::find($id);
         Cache::forget('ledgers');
         return $ledger;
     }
