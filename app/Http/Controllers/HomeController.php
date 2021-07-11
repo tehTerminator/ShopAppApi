@@ -29,7 +29,7 @@ class HomeController extends Controller
 
     public function monthlyStats() {
         $service = new GraphDataService();
-        return response()->json($service->monthlyStats());
+        return response()->json($service->monthlyInvoiceAmount());
     }
 
     public function incomeExpense() {
