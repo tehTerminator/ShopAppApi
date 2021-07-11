@@ -31,6 +31,7 @@ $router->get('/', function () use ($router) {
 $router->get('username', ['uses' => 'UserController@selectUsername']);
 $router->get('displayName', ['uses' => 'UserController@selectDisplayName']);
 
+
 $router->group(['middleware'=>'auth'], function() use ($router) {
     $router->get('dailyStats', ['uses' => 'HomeController@dailyStats']);
     $router->get('monthlyStats', ['uses' => 'HomeController@monthlyStats']);
@@ -39,7 +40,7 @@ $router->group(['middleware'=>'auth'], function() use ($router) {
     $router->get('userWiseSalesCount', ['uses' => 'UserReportController@userWiseSalesCount']);
     $router->get('productWiseSaleCount', ['uses' => 'HomeController@productWiseSaleCount']);
     $router->get('incomeExpense', ['uses' => 'HomeController@incomeExpense']);
-    $router->get('balance/{id}', ['uses' => 'LedgerController@selectBalance']);
+    $router->get('balance', ['uses' => 'LedgerController@selectBalance']);
     $router->put('balance/create', ['uses' => 'LedgerController@updateBalance']);
     $router->get('users', function() {return User::all('id', 'displayName');});
     $router->get('day-book', function(Request $request) {
