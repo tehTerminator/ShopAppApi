@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Balance;
+use App\Models\Ledger;
 use Illuminate\Http\Request;
 use App\Services\LedgerService;
+use Carbon\Carbon;
 
 class LedgerController extends Controller
 {
@@ -21,12 +23,11 @@ class LedgerController extends Controller
     }
 
     public function select(Request $request) {
-        $ledgers = 0;
         if($request->hasAny('id')) {
             $id = $request->query('id');
-            $ledgers = $this->ledgerService->getLedgerById($id);
+            $ledgers = Ledger::findOrFail($id);
         } else {
-            $ledgers = $this->ledgerService->getAllLedgers();
+            $ledgers = Ledger::all();
         }
         return response()->json($ledgers);
     }
@@ -67,13 +68,10 @@ class LedgerController extends Controller
         return response()->json($ledger);
     }
 
-    public function selectBalance(Request $request, int $id) {
-        $balance = Balance::whereDate('created_at', $request->query('date'))
-        ->where('ledger_id', $id)->first();
-        return response()->json($balance);
-    }
-
-    public function test(int $id) {
-        return response($this->ledgerService->getLatestClosing($id));
+    public function selectBalance(Request $request) {
+        $date = $request->query('date', Carbon::now());
+        $data = Balance::whereDate('created_at', $date)
+        ->with(['ledger'])->get();
+        return response($data);
     }
 }
