@@ -119,8 +119,9 @@ $router->group(['prefix'=>'customers', 'middleware'=>'auth'], function() use ($r
     });
 });
 
-$router->group(['prefix'=>'invoices', 'middleware'=>'auth'], function() use ($router) {
+$router->group(['prefix'=>'invoices'], function() use ($router) {
     $router->get('', ['uses' => 'InvoiceController@select']);
     $router->put('create', ['uses' => 'InvoiceController@create']);
     $router->post('transactions', ['uses' => 'InvoiceController@createTransactions']);
+    $router->delete('delete/{id}', ['uses' => 'InvoiceController@delete']);
 });

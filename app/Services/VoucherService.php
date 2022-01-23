@@ -13,12 +13,20 @@ class VoucherService {
 
     public function select(int $id, $from, $to) {
         $this->id = $id;
-        $to = Carbon::createFromFormat('Y-m-d', $to)->addDay(1);
-        $voucher = Voucher::whereBetween('created_at', [$from, $to])->where('state', 1)
+        $voucher = NULL;
+        if($from === $to) {
+            $voucher = Voucher::whereDate('created_at', $from)->where('state', 1);
+        }
+        else {
+            $to = Carbon::createFromFormat('Y-m-d', $to)->addDay(1);
+            $voucher = Voucher::whereBetween('created_at', [$from, $to])->where('state', 1);
+        }
+        $data = $voucher
         ->where(function($query) {
             $query->where('cr', $this->id)
             ->orWhere('dr', $this->id);
         })->with(['creditor', 'debtor'])
+        ->orderBy('created_at', 'ASC')
         ->get();
 
         $opening = Balance::where('ledger_id', $this->id)
@@ -30,7 +38,7 @@ class VoucherService {
             $opening = 0;
         }
 
-        return ['openingBalance' => $opening, 'vouchers' => $voucher];
+        return ['openingBalance' => $opening, 'vouchers' => $data];
     }
 
     public function create($voucher_data) {

@@ -58,4 +58,9 @@ class InvoiceController extends Controller
         
         $this->service->createNewInvoice($request, $user_id);
     }
+
+    public function delete(int $id) {
+        $this->service->delete($id);
+        return response()->json(['message' => 'Invoice #' . $id . 'Deleted Successfully']);
+    }
 }

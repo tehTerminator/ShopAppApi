@@ -143,6 +143,12 @@ class InvoiceService {
         return response()->json(['status' => 'Success']);
     }
 
+    public function delete(int $invoice_id) {
+        Transaction::where('invoice_id', $invoice_id)->delete();
+        Invoice::find($invoice_id)->delete();
+        Voucher::where('narration', 'LIKE', '%' . $invoice_id)->delete();
+    }
+
     private function getAmount($transaction) {
         return 
             ($transaction['quantity'] * $transaction['rate']) 
