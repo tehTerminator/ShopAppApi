@@ -10,6 +10,22 @@ use App\Models\Voucher;
 
 class InvoiceService {
 
+    public function get(Request $request) {
+        if ($request->has('id')) {
+            return $this->getInvoiceById($request->id);
+        }
+
+        else if ($request->has('createdAt')) {
+            return $this->getInvoiceByDate($request->userId, $request->createdAt);
+        }
+
+        else if ($request->has('customerId')) {
+            return $this->getInvoiceByCustomer($request->customerId);
+        }
+
+        return response('Invalid Query Parameter', 406);
+    }
+
     public function getInvoiceById(int $id) {
         $invoice = Invoice::where('id', $id)
         ->with(['customer', 'transactions'])
@@ -22,6 +38,11 @@ class InvoiceService {
             ->where('user_id', $user)
             ->with(['customer'])->get();
 
+        return $invoices;
+    }
+
+    public function getInvoiceByCustomer(int $customer_id) {
+        $invoices = Invoice::where('customer_id', $customer_id)->get();
         return $invoices;
     }
 

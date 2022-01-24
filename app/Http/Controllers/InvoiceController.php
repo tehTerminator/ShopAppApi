@@ -21,21 +21,8 @@ class InvoiceController extends Controller
     }
 
     public function select(Request $request) {
-        if ($request->has('id')) {
-            $id = $request->id;
-            return response()->json($this->service->getInvoiceById($id));
-        }
-
-        if ($request->has('createdAt')) {
-            $user_id = $request->userId;
-            $created_at = $request->createdAt;
-            
-            return response()->json(
-                $this->service->getInvoiceByDate($user_id, $created_at)
-            );
-        }
-
-        return response()->json(['status'=>'Please Either Provide Date or Id']);
+       $data = $this->service->get($request);
+       return response()->json($data);
     }
 
     public function create(Request $request) {
