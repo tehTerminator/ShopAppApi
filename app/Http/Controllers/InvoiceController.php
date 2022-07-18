@@ -21,7 +21,7 @@ class InvoiceController extends Controller
     }
 
     public function select(Request $request) {
-       $data = $this->service->get($request);
+       $data = $this->service->getInvoices($request);
        return response()->json($data);
     }
 
