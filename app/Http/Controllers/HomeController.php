@@ -36,4 +36,9 @@ class HomeController extends Controller
         $service = new GraphDataService();
         return response()->json($service->incomeVsExpenses());
     }
+
+    public function operatorPerformance() {
+        $service = new GraphDataService();
+        return response()->json($service->operatorMonthlyComparison());
+    }
 }
