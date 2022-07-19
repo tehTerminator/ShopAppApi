@@ -84,10 +84,10 @@ class GraphDataService
     public function operatorMonthlyComparison()
     {
         $this->date = Carbon::now()->subDays(15);
-        $graphData = Cache::remember('operatorSalesComparison', 3600, function () {
+        $graphData = Cache::remember('operatorComparison', 43200, function () {
             $data = [];
 
-            $operators = User::where('id', '>', '4');
+            $operators = User::whereIn('id', [2, 5, 6, 7, 8])->get();
 
             foreach ($operators as $operator) {
                 $operatorData = [
