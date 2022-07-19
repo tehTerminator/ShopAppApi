@@ -83,8 +83,8 @@ class GraphDataService
 
     public function operatorMonthlyComparison()
     {
-        $this->date = Carbon::now()->subDays(30);
-        $graphData = Cache::remember('operatorSalesComparison', 0, function () {
+        $this->date = Carbon::now()->subDays(15);
+        $graphData = Cache::remember('operatorSalesComparison', 3600, function () {
             $data = [];
 
             $operators = User::all();
@@ -92,7 +92,7 @@ class GraphDataService
             foreach ($operators as $operator) {
                 $operatorData = [
                     'name' => $operator->displayName,
-                    'series' => $this->operatorMonthlyReport($operator->id)
+                    'series' => $this->cumulateData($operator->id)
                 ];
                 array_push($data, $operatorData);
             }
@@ -101,9 +101,21 @@ class GraphDataService
         return $graphData;
     }
 
-    private function operatorMonthlyReport($id)
+    private function cumulateData($id) {
+        $response = [];
+        $total = 0;
+        for($i = 15; $i > 0; $i--) {
+            $forDate = Carbon::now()->subDays($i)->format('Y-m-d');
+            $total += $this->operatorDailyReport($id, $i);
+            array_push($response, ["name" => $forDate, "value" => $total]);
+        }
+        return $response;
+    }
+
+    private function operatorDailyReport($id, $days)
     {
-        return Transaction::select(
+        $theDate = Carbon::now()->subDays($days);
+        $row = Transaction::select(
             DB::raw("
             sum(
                 calcTransactionAmount(
@@ -113,11 +125,16 @@ class GraphDataService
                 )
             ) as value"),
             DB::raw("date(transactions.created_at) as name"),
-        )->whereDate('created_at', '>=', $this->date)
+        )->whereDate('created_at', $theDate)
             ->where('user_id', $id)
             ->where('item_type', 'PRODUCT')
             ->groupBy('name')
             ->orderBy('created_at', 'ASC')
-            ->get();
+            ->first();
+
+        if(empty($row)) {
+            return 0;
+        }
+        return $row->value;
     }
 }
