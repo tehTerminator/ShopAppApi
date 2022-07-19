@@ -87,7 +87,7 @@ class GraphDataService
         $graphData = Cache::remember('operatorSalesComparison', 3600, function () {
             $data = [];
 
-            $operators = User::all();
+            $operators = User::where('id', '>', '4');
 
             foreach ($operators as $operator) {
                 $operatorData = [
