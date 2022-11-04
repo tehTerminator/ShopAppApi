@@ -22,7 +22,7 @@ class GraphDataService
 
     public function monthlyInvoiceAmount()
     {
-        $response = Cache::remember('monthlyStats', 3600, function () {
+        $response = Cache::remember('monthlyStats', 43200, function () {
             $date = Carbon::now()->subDays(15);
             return Invoice::select(
                 DB::raw('sum(amount) as value'),
@@ -39,8 +39,7 @@ class GraphDataService
 
     public function incomeVsExpenses()
     {
-        $this->date = Carbon::now()->subDays(15);
-        $graphData = Cache::remember('incomeExpense', 3600, function () {
+        $graphData = Cache::remember('incomeExpense', 43200, function () {
             $data = [
                 [
                     'name' => 'Income',
@@ -55,25 +54,8 @@ class GraphDataService
             $incomeLedgers = Ledger::where('kind', 'INCOME')->pluck('id')->toArray();
             $expenseLedgers = Ledger::where('kind', 'EXPENSE')->pluck('id')->toArray();
 
-            $data[0]['series'] = Voucher::select(
-                DB::raw("sum(amount) as 'value'"),
-                DB::raw("DATE_FORMAT(created_at, '%Y-%m-%d') as name")
-            )
-                ->whereIn('cr', $incomeLedgers)
-                ->whereDate('created_at', '>', $this->date)
-                ->groupBy('name')
-                ->orderBy('name', 'ASC')
-                ->get();
-
-            $data[1]['series'] = Voucher::select(
-                DB::raw("sum(amount) as 'value'"),
-                DB::raw("DATE_FORMAT(created_at, '%Y-%m-%d') as name")
-            )
-                ->whereIn('dr', $expenseLedgers)
-                ->whereDate('created_at', '>', $this->date)
-                ->groupBy('name')
-                ->orderBy('name', 'ASC')
-                ->get();
+            $data[0]['series'] = $this->cumulateSeries('cr', $incomeLedgers);
+            $data[1]['series'] = $this->cumulateSeries('dr', $expenseLedgers);
 
             return $data;
         });
@@ -81,9 +63,35 @@ class GraphDataService
         return $graphData;
     }
 
+    private function cumulateSeries($crOrDr, $idList) {
+        $response = [];
+        $total = 0;
+        for($i = 30; $i > 0; $i--) {
+            $forDate = Carbon::now()->subDays($i)->format('Y-m-d');
+            $total += $this->getAmountForDate($crOrDr, $idList, $forDate);
+            array_push($response, ["name" => $forDate, "value" => $total]);
+        }
+        return $response;
+    }
+
+    private function getAmountForDate($crOrDr, $idList, $date) {
+        $voucher = Voucher::select(
+            DB::raw("sum(amount) as 'value'"),
+            DB::raw("DATE_FORMAT(created_at, '%Y-%m-%d') as name")
+        )
+            ->whereIn($crOrDr, $idList)
+            ->whereDate('created_at', $date)
+            ->groupBy('name')
+            ->orderBy('name', 'ASC')
+            ->first();
+        if(empty($voucher)) {
+            return 0;
+        }
+        return $voucher->value;
+    }
+
     public function operatorMonthlyComparison()
     {
-        $this->date = Carbon::now()->subDays(15);
         $graphData = Cache::remember('operatorComparison', 43200, function () {
             $data = [];
 
@@ -104,7 +112,7 @@ class GraphDataService
     private function cumulateData($id) {
         $response = [];
         $total = 0;
-        for($i = 15; $i > 0; $i--) {
+        for($i = 30; $i > 0; $i--) {
             $forDate = Carbon::now()->subDays($i)->format('Y-m-d');
             $total += $this->operatorDailyReport($id, $i);
             array_push($response, ["name" => $forDate, "value" => $total]);
