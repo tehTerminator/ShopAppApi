@@ -17,6 +17,10 @@ class CustomerController extends Controller
         //
     }
 
+    public function select(Request $request) {
+        return Customer::all();
+    }
+
     public function create(Request $request) {
         $this->validate($request, [
             'title' => 'required|unique:customers|string',
