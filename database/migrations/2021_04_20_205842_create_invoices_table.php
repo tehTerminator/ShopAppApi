@@ -17,13 +17,13 @@ class CreateInvoicesTable extends Migration
             $table->id();
             $table->unsignedBigInteger('customer_id');
             $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('payment_method_id');
             $table->boolean('paid')->default(true);
-            $table->string('paymentMethod', '100')->default('CASH');
             $table->double('amount');
             $table->timestamps();
-
             $table->foreign('customer_id')->references('id')->on('customers');
             $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('payment_method_id')->references('id')->on('payment_method');
         });
     }
 
