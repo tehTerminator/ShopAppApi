@@ -15,6 +15,8 @@ class CreateStockUsageTable extends Migration
     {
         Schema::create('stock_usage', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('invoice_id')->nullable()->default(NULL);
+            $table->foreign('invoice_id')->references('id')->on('invoices');
             $table->unsignedBigInteger('stock_item_id');
             $table->foreign('stock_item_id')->references('id')->on('stock_items');
             $table->double('quantity');
