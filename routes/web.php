@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Models\Customer;
+use App\Models\Ledger;
 use App\Models\PosItem;
 use App\Models\PosTemplate;
 use App\Models\Product;
@@ -126,4 +127,9 @@ $router->group(['prefix'=>'invoices'], function() use ($router) {
     $router->put('create', ['uses' => 'InvoiceController@create']);
     $router->post('transactions', ['uses' => 'InvoiceController@createTransactions']);
     $router->delete('delete/{id}', ['uses' => 'InvoiceController@delete']);
+});
+
+$router->group(['prefix' => 'get'], function() use ($router) {
+    $router->get('ledgers', function(){ return response()->json(Ledger::all()); });
+    $router->get('ledger\{$id}', function($id){ return response()->json(Ledger::findOrFail($id)); });
 });
