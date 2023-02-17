@@ -20,6 +20,7 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->string('token')->nullable()->default(NULL);
             $table->string('imageUrl')->nullable()->default(NULL);
+            $table->tinyInteger('auth_level')->default(0);
             $table->timestamps();
         });
     }
