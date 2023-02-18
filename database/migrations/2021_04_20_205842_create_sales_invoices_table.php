@@ -13,7 +13,7 @@ class CreateInvoicesTable extends Migration
      */
     public function up()
     {
-        Schema::create('invoices', function (Blueprint $table) {
+        Schema::create('sales_invoices', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('customer_id');
             $table->unsignedBigInteger('user_id');
@@ -21,7 +21,7 @@ class CreateInvoicesTable extends Migration
             $table->boolean('paid')->default(true);
             $table->double('amount');
             $table->timestamps();
-            $table->foreign('customer_id')->references('id')->on('customers');
+            $table->foreign('customer_id')->references('id')->on('contacts');
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('payment_method_id')->references('id')->on('payment_method');
         });
