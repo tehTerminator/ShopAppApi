@@ -13,9 +13,15 @@ class CreateBriefTransactionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('brief_transactions', function (Blueprint $table) {
+        Schema::create('sales_general_transactions', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('invoice_id');
+            $table->string('description');
+            $table->integer('quantity');
+            $table->double('rate');
+            $table->double('discount');
             $table->timestamps();
+            $table->foreign('invoice_id')->references('id')->on('invoices');
         });
     }
 
