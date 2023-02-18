@@ -19,7 +19,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var array
      */
     protected $fillable = [
-        'displayName', 'username', 'token', 'imageUrl', 'password'
+        'title', 'username', 'token', 'imageUrl', 'password', 'auth_level'
     ];
 
     /**
@@ -29,5 +29,9 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     protected $hidden = [
         'password'
+    ];
+
+    protected $casts = [
+        'auth_level' => 'integer'
     ];
 }
