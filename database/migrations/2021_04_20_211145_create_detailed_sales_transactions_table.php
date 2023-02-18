@@ -13,7 +13,7 @@ class CreateDetailedTransactionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('detailed_transactions', function (Blueprint $table) {
+        Schema::create('detailed_sales_transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('invoice_id');
             $table->unsignedBigInteger('item_id');
@@ -25,7 +25,7 @@ class CreateDetailedTransactionsTable extends Migration
             $table->double('discount')->default(0);
             $table->timestamps();
             
-            $table->foreign('invoice_id')->references('id')->on('invoices');
+            $table->foreign('sales_invoice_id')->references('id')->on('sales_invoices');
             $table->foreign('user_id')->references('id')->on('users');
         });
     }
