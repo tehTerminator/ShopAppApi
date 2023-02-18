@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateBriefTransactionsTable extends Migration
+class CreateBundlesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,11 @@ class CreateBriefTransactionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('sales_general_transactions', function (Blueprint $table) {
+        Schema::create('bundles', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('invoice_id');
-            $table->string('description');
-            $table->integer('quantity');
+            $table->string('title');
             $table->double('rate');
-            $table->double('discount');
             $table->timestamps();
-            $table->foreign('invoice_id')->references('id')->on('invoices');
         });
     }
 
@@ -32,6 +28,6 @@ class CreateBriefTransactionsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('brief_transactions');
+        Schema::dropIfExists('bundles');
     }
 }

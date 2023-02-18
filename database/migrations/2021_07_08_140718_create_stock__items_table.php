@@ -13,7 +13,7 @@ class CreateStockItemsTable extends Migration
      */
     public function up()
     {
-        Schema::create('stock_items', function (Blueprint $table) {
+        Schema::create('stock__items', function (Blueprint $table) {
             $table->id();
             $table->string('title', 50);
             $table->integer('quantity')->default(0);
@@ -29,6 +29,6 @@ class CreateStockItemsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('stock_items');
+        Schema::dropIfExists('stock__items');
     }
 }

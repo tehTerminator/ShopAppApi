@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePosTemplatesTable extends Migration
+class CreateStockUsageTemplateTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,12 @@ class CreatePosTemplatesTable extends Migration
      */
     public function up()
     {
-        Schema::create('pos_templates', function (Blueprint $table) {
+        Schema::create('stock__usage_template', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('positem_id');
-            $table->foreign('positem_id')->references('id')->on('pos_items');
-            $table->unsignedBigInteger('item_id');
-            $table->enum('kind', ['PRODUCT', 'LEDGER']);
-            $table->double('rate');
+            $table->unsignedBigInteger('stock_item_id');
+            $table->foreign('stock_item_id')->references('id')->on('stock__items');
+            $table->unsignedBigInteger('product_id');
+            $table->foreign('product_id')->references('id')->on('products');
             $table->double('quantity');
             $table->timestamps();
         });
@@ -32,6 +31,6 @@ class CreatePosTemplatesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('pos_templates');
+        Schema::dropIfExists('stock__usage_template');
     }
 }

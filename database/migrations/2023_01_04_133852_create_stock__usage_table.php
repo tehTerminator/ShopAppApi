@@ -13,12 +13,12 @@ class CreateStockUsageTable extends Migration
      */
     public function up()
     {
-        Schema::create('stock_usage', function (Blueprint $table) {
+        Schema::create('stock__usage', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('invoice_id')->nullable()->default(NULL);
-            $table->foreign('invoice_id')->references('id')->on('invoices');
+            $table->unsignedBigInteger('sales_invoice_id')->nullable()->default(NULL);
+            $table->foreign('sales_invoice_id')->references('id')->on('sales__invoices');
             $table->unsignedBigInteger('stock_item_id');
-            $table->foreign('stock_item_id')->references('id')->on('stock_items');
+            $table->foreign('stock_item_id')->references('id')->on('stock__items');
             $table->double('quantity');
             $table->string('narration')->nullable()->default(NULL);
             $table->timestamps();
@@ -32,6 +32,6 @@ class CreateStockUsageTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('stock_usage');
+        Schema::dropIfExists('stock__usage');
     }
 }

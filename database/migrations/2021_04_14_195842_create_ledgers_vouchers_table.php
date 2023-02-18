@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateVouchersTable extends Migration
+class CreateLedgersVouchersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateVouchersTable extends Migration
      */
     public function up()
     {
-        Schema::create('vouchers', function (Blueprint $table) {
+        Schema::create('ledgers__vouchers', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('cr');
             $table->unsignedBigInteger('dr');
@@ -24,6 +24,8 @@ class CreateVouchersTable extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->on('users')->references('id');
             $table->boolean('immutable')->default(false);
+            $table->double('cr_balance')->default(0.00);
+            $table->double('dr_balance')->default(0.00);
             $table->softDeletes();
             $table->timestamps();
         });
@@ -36,6 +38,6 @@ class CreateVouchersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('vouchers');
+        Schema::dropIfExists('ledgers__vouchers');
     }
 }
