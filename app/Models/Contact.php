@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Customer extends Model {
+class Contact extends Model {
 
     /**
      * The attributes that are mass assignable.
@@ -12,10 +12,10 @@ class Customer extends Model {
      * @var array
      */
     protected $fillable = [
-        'title', 'address'
+        'title', 'address', 'mobile'
     ];
 
-    public function invoices() {
-        return $this->hasMany(Invoice::class);
+    public function sales_invoices() {
+        return $this->hasMany(SalesInvoices::class);
     }
 }
