@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Invoice extends Model {
+class SalesInvoice extends Model {
+
+    protected $table = 'sales__invoices';
 
     /**
      * The attributes that are mass assignable.
@@ -12,11 +14,11 @@ class Invoice extends Model {
      * @var array
      */
     protected $fillable = [
-        'customer_id', 'paymentMethod', 'paid', 'amount', 'user_id'
+        'customer_id', 'paid', 'amount', 'user_id'
     ];
 
     public function customer() {
-        return $this->hasOne(Customer::class, 'id', 'customer_id');
+        return $this->belongsTo(Contact::class, 'id', 'customer_id');
     }
 
     public function transactions() {
