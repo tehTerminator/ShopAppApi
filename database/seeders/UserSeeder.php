@@ -18,13 +18,15 @@ class UserSeeder extends Seeder
         User::create([
             'displayName' => 'Administrator',
             'username' => 'administrator',
-            'password' => Hash::make('myPassword')
+            'password' => Hash::make('myPassword'),
+            'auth_level' => 100
         ]);
 
         User::create([
             'displayName' => 'Prateek Kher',
             'username' => 'prateekkher',
-            'password' => Hash::make('demo112')
+            'password' => Hash::make('demo112'),
+            'auth_level' => 100
         ]);
     }
 }
