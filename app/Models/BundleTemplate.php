@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PosTemplate extends Model {
+class BundleTemplate extends Model {
 
-    protected $table = 'pos_templates';
+    protected $table = 'bundles__templates';
 
     /**
      * The attributes that are mass assignable.
@@ -14,6 +14,6 @@ class PosTemplate extends Model {
      * @var array
      */
     protected $fillable = [
-        'positem_id', 'item_id', 'kind', 'rate', 'quantity'
+        'bundle_id', 'item_id', 'kind', 'rate', 'quantity'
     ];
 }
