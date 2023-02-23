@@ -16,8 +16,16 @@ class CreateLedgersTable extends Migration
         Schema::create('ledgers', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->enum('kind', ['BANK', 'CASH', 'PAYABLES', 'RECEIVABLES', 'EXPENSE', 'INCOME']);
-            $table->double('balance');
+            $table->enum('kind', [
+                'BANK', 
+                'CASH', 
+                'PAYABLES', 
+                'RECEIVABLES', 
+                'EXPENSE', 
+                'INCOME'
+            ]);
+            $table->double('balance')->default(0.00);
+            $table->boolean('can_receive_payment')->default(false);
             $table->timestamps();
         });
     }
