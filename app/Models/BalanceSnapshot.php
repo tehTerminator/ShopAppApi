@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Balance extends Model {
+class BalanceSnapshot extends Model {
 
-    protected $table = 'balance';
+    protected $table = 'ledgers__balance_shapshots';
     /**
      * The attributes that are mass assignable.
      *
