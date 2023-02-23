@@ -4,9 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class PosItem extends Model {
+class Bundle extends Model {
 
-    protected $table = 'pos_items';
 
     /**
      * The attributes that are mass assignable.
@@ -17,7 +16,7 @@ class PosItem extends Model {
         'title', 'rate'
     ];
 
-    public function pos_templates() {
-        return $this->hasMany(PosTemplate::class, 'positem_id', 'id');
+    public function bundle_template() {
+        return $this->hasMany(BundleTemplate::class, 'bundle_id', 'id');
     }
 }
