@@ -12,10 +12,10 @@ class Ledger extends Model {
      * @var array
      */
     protected $fillable = [
-        'title', 'kind'
+        'title', 'kind', 'balance', 'can_receive_payment'
     ];
 
-    public function balance() {
+    public function balance_snapshot() {
         return $this->hasMany(Balance::class);
     }
 }
