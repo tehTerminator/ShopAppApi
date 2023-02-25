@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class SalesInvoice extends Model {
+class Invoice extends Model {
 
     protected $table = 'sales__invoices';
 
@@ -14,14 +14,18 @@ class SalesInvoice extends Model {
      * @var array
      */
     protected $fillable = [
-        'customer_id', 'paid', 'amount', 'user_id'
+        'contact_id', 'paid', 'amount', 'user_id', 'kind'
     ];
 
-    public function customer() {
-        return $this->belongsTo(Contact::class, 'id', 'customer_id');
+    public function contact() {
+        return $this->belongsTo(Contact::class, 'id', 'contacts');
     }
 
-    public function transactions() {
-        return $this->hasMany(Transaction::class, 'invoice_id', 'id');
+    public function generalTransactions() {
+        return $this->hasMany(GeneralTransactions::class, 'invoice_id', 'id');
+    }
+
+    public function detailedTransactions() {
+        return $this->hasMany(DetailedTransactions::class, 'invoice_id', 'id');
     }
 }
