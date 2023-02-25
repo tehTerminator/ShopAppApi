@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSalesDetailedTransactionsTable extends Migration
+class CreateInvoicesDetailedTransactionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,19 +13,19 @@ class CreateSalesDetailedTransactionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('sales__detailed_transactions', function (Blueprint $table) {
+        Schema::create('invoices__detailed_transactions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('sales_invoice_id');
+            $table->unsignedBigInteger('invoice_id');
             $table->unsignedBigInteger('item_id');
             $table->unsignedBigInteger('user_id');
-            $table->enum('item_type', ['LEDGER', 'PRODUCT']);
+            $table->enum('kind', ['LEDGER', 'PRODUCT']);
             $table->string('description');
             $table->double('quantity');
             $table->double('rate');
             $table->double('discount')->default(0);
             $table->timestamps();
             
-            $table->foreign('sales_invoice_id')->references('id')->on('sales__invoices');
+            $table->foreign('invoice_id')->references('id')->on('invoices');
             $table->foreign('user_id')->references('id')->on('users');
         });
     }

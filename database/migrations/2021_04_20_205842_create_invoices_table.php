@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSalesInvoicesTable extends Migration
+class CreateInvoicesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,15 @@ class CreateSalesInvoicesTable extends Migration
      */
     public function up()
     {
-        Schema::create('sales__invoices', function (Blueprint $table) {
+        Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('customer_id');
+            $table->unsignedBigInteger('contact_id');
             $table->unsignedBigInteger('user_id');
+            $table->enum('kind', ['SALES', 'PURCHASE']);
             $table->boolean('paid')->default(true);
             $table->double('amount');
             $table->timestamps();
-            $table->foreign('customer_id')->references('id')->on('contacts');
+            $table->foreign('contact_id')->references('id')->on('contacts');
             $table->foreign('user_id')->references('id')->on('users');
         });
     }
