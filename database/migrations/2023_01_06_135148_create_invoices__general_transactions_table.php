@@ -13,7 +13,7 @@ class CreateInvoicesGeneralTransactionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('invoice__general_transactions', function (Blueprint $table) {
+        Schema::create('invoices__general_transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('invoice_id');
             $table->string('description');
