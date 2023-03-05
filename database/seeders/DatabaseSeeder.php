@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Contact;
 use App\Models\Customer;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class
         ]);
 
-        Customer::create(['title' => 'Cash','address' => 'Ashoknagar']);
+        Contact::create(['title' => 'Walk-in Customer','address' => 'Ashoknagar', 'ledger_id' => 1]);
 
 
         DB::unprepared('DROP FUNCTION IF EXISTS calcTransactionAmount');
