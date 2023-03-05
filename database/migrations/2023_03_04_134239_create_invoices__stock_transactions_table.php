@@ -35,3 +35,4 @@ class CreateInvoicesStockTransactionsTable extends Migration
         Schema::dropIfExists('invoices__stock_transactions');
     }
 }
+
