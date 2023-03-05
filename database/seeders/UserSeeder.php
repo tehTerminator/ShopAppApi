@@ -16,14 +16,14 @@ class UserSeeder extends Seeder
     public function run()
     {
         User::create([
-            'displayName' => 'Administrator',
+            'title' => 'Administrator',
             'username' => 'administrator',
             'password' => Hash::make('myPassword'),
             'auth_level' => 100
         ]);
 
         User::create([
-            'displayName' => 'Prateek Kher',
+            'title' => 'Prateek Kher',
             'username' => 'prateekkher',
             'password' => Hash::make('demo112'),
             'auth_level' => 100
