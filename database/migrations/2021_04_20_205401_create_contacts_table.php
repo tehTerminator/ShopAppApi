@@ -16,9 +16,12 @@ class CreateContactsTable extends Migration
         Schema::create('contacts', function (Blueprint $table) {
             $table->id();
             $table->string('title', 100);
-            $table->string('mobile', 10);
+            $table->string('mobile', 10)->nullable()->default(null);
             $table->string('address');
             $table->timestamps();
+
+            $table->unsignedBigInteger('ledger_id')->nullable();
+            $table->foreign('ledger_id')->references('id')->on('ledgers');
         });
     }
 

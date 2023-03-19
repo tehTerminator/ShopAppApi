@@ -27,7 +27,9 @@ class UserController extends Controller
         $username = $request->input('username');
         $password = $request->input('password');
 
+        
         $user = User::where('username', $username)->firstOrFail();
+        
         
         if (Hash::check($password, $user->password)) {
             $user->token = $this->generateToken();
@@ -43,7 +45,7 @@ class UserController extends Controller
 
     public function register(Request $request) {
         $this->validate($request, [
-            'displayName' => 'required|min:3|max:50',
+            'title' => 'required|min:3|max:50',
             'username' => 'required|min:3|max:50|unique:users|alpha_num',
             'password' => 'required|min:3|max:50|alpha_num'
         ]);
@@ -52,7 +54,7 @@ class UserController extends Controller
         $hashed_password = Hash::make($request->input('password'));
 
         User::create([
-            'displayName' => $request->input('displayName'),
+            'title' => $request->input('displayName'),
             'username' => $request->input('username'),
             'password' => $hashed_password
         ]);

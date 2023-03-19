@@ -1,11 +1,8 @@
 <?php
 
-use App\Models\User;
-use App\Models\Customer;
 use App\Models\Ledger;
-use App\Models\PosItem;
-use App\Models\PosTemplate;
 use App\Models\Product;
+use App\Models\Stock;
 use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -45,7 +42,6 @@ $router->group(['middleware'=>'auth'], function() use ($router) {
     $router->get('balance', ['uses' => 'LedgerController@selectBalance']);
     $router->put('balance/create', ['uses' => 'LedgerController@updateBalance']);
     $router->post('balance/update', ['uses'=>'LedgerController@autoUpdateBalance']);
-    $router->get('users', function() {return User::all('id', 'displayName');});
 
     $router->get('day-book', function(Request $request) {
         $dayBook = DB::select('call tallyEntries(?)', [$request->query('date')]);
@@ -76,26 +72,26 @@ $router->group(['prefix'=>'products', 'middleware'=>'auth'], function() use ($ro
     $router->delete('delete/{id}', ['uses' => 'ProductConroller@delete']);
 });
 
-$router->group(['prefix'=>'pos-items', 'middleware'=>'auth'], function() use ($router) {
-    $router->get('', ['uses' => 'PosItemController@select']);
-    $router->put('create', ['uses' => 'PosItemController@create']);
-    $router->post('update', ['uses' => 'PosItemController@update']);
-    $router->delete('delete/{id}', function($id) {
-        $posItem = PosItem::findOrFail($id);
-        PosTemplate::where('positem_id', $posItem->id)->delete();
-        $posItem->delete();
+// $router->group(['prefix'=>'pos-items', 'middleware'=>'auth'], function() use ($router) {
+//     $router->get('', ['uses' => 'PosItemController@select']);
+//     $router->put('create', ['uses' => 'PosItemController@create']);
+//     $router->post('update', ['uses' => 'PosItemController@update']);
+//     $router->delete('delete/{id}', function($id) {
+//         $posItem = PosItem::findOrFail($id);
+//         PosTemplate::where('positem_id', $posItem->id)->delete();
+//         $posItem->delete();
 
-        return response()->json(['message'=>'PosItem Deleted Successfully']);
-    });
-});
+//         return response()->json(['message'=>'PosItem Deleted Successfully']);
+//     });
+// });
 
 $router->group(['prefix'=>'template', 'middleware'=>'auth'], function () use ($router) {
     $router->put('create', ['uses' => 'PosTemplateController@create']);
     $router->post('update', ['uses' => 'PosTemplateController@update']);
-    $router->delete('delete/{id}', function($id) {
-        PosTemplate::findOrFail($id)->delete();
-        return response()->json(['message' => 'Template Deleted Success']);
-    });
+    // $router->delete('delete/{id}', function($id) {
+    //     PosTemplate::findOrFail($id)->delete();
+    //     return response()->json(['message' => 'Template Deleted Success']);
+    // });
 });
 
 $router->group(['prefix' => 'vouchers', 'middleware'=>'auth'], function() use ($router) {
@@ -111,15 +107,15 @@ $router->group(['prefix' => 'vouchers', 'middleware'=>'auth'], function() use ($
 
 
 $router->group(['prefix'=>'customers', 'middleware'=>'auth'], function() use ($router) {
-    $router->get('', function() {
-        return response()->json(Customer::all());
-    });
+    // $router->get('', function() {
+    //     return response()->json(Customer::all());
+    // });
     $router->put('create', ['uses' => 'CustomerController@create']);
     $router->post('update', ['uses' => 'CustomerController@update']);
-    $router->delete('delete/{id}', function($id) {
-        Customer::findOrFail($id)->delete();
-        return response()->json(['message' => 'Customer Deleted Successfully']);
-    });
+    // $router->delete('delete/{id}', function($id) {
+    //     Customer::findOrFail($id)->delete();
+    //     return response()->json(['message' => 'Customer Deleted Successfully']);
+    // });
 });
 
 $router->group(['prefix'=>'invoices'], function() use ($router) {
@@ -129,7 +125,15 @@ $router->group(['prefix'=>'invoices'], function() use ($router) {
     $router->delete('delete/{id}', ['uses' => 'InvoiceController@delete']);
 });
 
-$router->group(['prefix' => 'get'], function() use ($router) {
+
+$router->group(['prefix' => 'get', 'middleware'=>'auth'], function() use ($router) {
     $router->get('ledgers', function(){ return response()->json(Ledger::all()); });
-    $router->get('ledger\{$id}', function($id){ return response()->json(Ledger::findOrFail($id)); });
+    // $router->get('ledger\{$id}', function($id){ return response()->json(Ledger::findOrFail($id)); });
+    $router->get('stocks', function() { return response()->json(Stock::all()); });
 });
+
+$router->group(['prefix' => 'create', 'middleware' => 'auth'], function () use ($router) {
+    $router->post('stocks', ['uses' => 'StockController@create']);
+});
+
+$router->get('stocks', ['uses' => 'StockController@demo']);
