@@ -13,7 +13,7 @@ class BalanceSnapshot extends Model {
      * @var array
      */
     protected $fillable = [
-        'ledger_id', 'opening', 'closing'
+        'ledger_id', 'balance'
     ];
 
     public function ledger() {

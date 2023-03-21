@@ -41,7 +41,7 @@ $router->group(['middleware'=>'auth'], function() use ($router) {
     $router->get('operatorPerformance', ['uses' => 'HomeController@operatorPerformance']);
     $router->get('balance', ['uses' => 'LedgerController@selectBalance']);
     $router->put('balance/create', ['uses' => 'LedgerController@updateBalance']);
-    $router->post('balance/update', ['uses'=>'LedgerController@autoUpdateBalance']);
+    $router->post('balance/update', ['uses'=>'LedgerController@takeBalanceSnapshot']);
 
     $router->get('day-book', function(Request $request) {
         $dayBook = DB::select('call tallyEntries(?)', [$request->query('date')]);
