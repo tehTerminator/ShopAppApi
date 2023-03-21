@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Voucher;
-use App\Models\Balance;
+use App\Models\BalanceSnapShot;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,7 +29,7 @@ class VoucherService {
         ->orderBy('created_at', 'ASC')
         ->get();
 
-        $opening = Balance::where('ledger_id', $this->id)
+        $opening = BalanceSnapshot::where('ledger_id', $this->id)
         ->whereDate('created_at', $from)
         ->pluck('opening')->pop();
         // ->toSql();

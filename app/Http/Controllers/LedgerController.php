@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Balance;
+use App\Models\BalanceSnapShot;
 use App\Models\Ledger;
 use Illuminate\Http\Request;
 use App\Services\LedgerService;
@@ -74,7 +74,7 @@ class LedgerController extends Controller
 
     public function selectBalance(Request $request) {
         $date = $request->query('date', Carbon::now());
-        $data = Balance::whereDate('created_at', $date)
+        $data = BalanceSnapshot::whereDate('created_at', $date)
         ->with(['ledger'])->get();
         return response($data);
     }

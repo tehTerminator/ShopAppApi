@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Ledger;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
-use App\Models\Balance;
+use App\Models\BalanceSnapShot;
 use App\Models\Voucher;
 use Illuminate\Http\Request;
 
@@ -34,16 +34,16 @@ class LedgerService {
             $this->autoSetBalanceById($ledger->id);
         }
 
-        return Balance::whereDate('created_at', Carbon::now())
+        return BalanceSnapshot::whereDate('created_at', Carbon::now())
         ->with('ledger')->get();
     }
 
     public function updateBalance(int $id, $opening, $closing) {
-        $balance = Balance::whereDate('created_at', Carbon::now())
+        $balance = BalanceSnapshot::whereDate('created_at', Carbon::now())
         ->where('ledger_id', $id)->first();
 
         if (!$balance) {
-            Balance::create([
+            BalanceSnapshot::create([
                 'ledger_id' => $id,
                 'opening' => $opening,
                 'closing' => $closing
@@ -60,7 +60,7 @@ class LedgerService {
     }
 
     public function autoSetBalanceById(int $ledger_id) {
-        $balance = Balance::where('ledger_id', $ledger_id)
+        $balance = BalanceSnapshot::where('ledger_id', $ledger_id)
         ->whereDate('created_at', Carbon::now())
         ->first();
         if(empty($balance)) {
@@ -77,7 +77,7 @@ class LedgerService {
 
     public function getLatestClosing(int $ledger_id) {
         $yesterday = Carbon::now()->subDays(1);
-        $balance  = Balance::where('ledger_id', $ledger_id)
+        $balance  = BalanceSnapshot::where('ledger_id', $ledger_id)
         ->whereDate('created_at', $yesterday)->first();
         if(empty($balance)) {
             return 0;

@@ -16,6 +16,6 @@ class Ledger extends Model {
     ];
 
     public function balance_snapshot() {
-        return $this->hasMany(Balance::class);
+        return $this->hasMany(BalanceSnapshot::class);
     }
 }
