@@ -17,8 +17,7 @@ class CreateLedgersBalanceSnapshotsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('ledger_id');
             $table->foreign('ledger_id')->references('id')->on('ledgers');
-            $table->double('opening')->default(0.00);
-            $table->double('closing')->default(0.00);
+            $table->double('balance');
             $table->timestamps();
         });
     }
