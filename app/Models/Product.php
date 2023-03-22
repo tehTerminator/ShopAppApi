@@ -14,4 +14,8 @@ class Product extends Model {
     protected $fillable = [
         'title', 'rate'
     ];
+
+    public function stockTemplate() {
+        return $this->hasMany(StockUsageTemplate::class);
+    }
 }
