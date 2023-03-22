@@ -66,6 +66,8 @@ class StockService
         return $rules;
     }
 
-    
-    public function __construct(){  }
+
+    public function __construct()
+    {
+    }
 }
