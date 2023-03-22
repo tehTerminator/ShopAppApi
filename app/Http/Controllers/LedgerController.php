@@ -19,47 +19,40 @@ class LedgerController extends Controller
     public function __construct()
     {
         //
-        $this->ledgerService = new LedgerService();
     }
 
-    public function select(Request $request) {
-        if($request->hasAny('id')) {
-            $id = $request->query('id');
-            $ledgers = Ledger::findOrFail($id);
-        } else {
-            $ledgers = Ledger::all();
-        }
-        return response()->json($ledgers);
+    public function select() {
+        return response()->json(Ledger::all());
     }
 
     public function create(Request $request) {
-        $this->validate($request, [
-            'title' => 'required|unique:ledgers|max:50|min:3|string',
-            'kind' => 'required|in:BANK,CASH,PAYABLES,RECEIVABLES,EXPENSE,INCOME',
-        ]);
-
-        $ledger = $this->ledgerService->createLedger($request->title, $request->kind);
-        return response()->json($ledger);
+        $this->validate($request, LedgerService::getValidationRules(true, false));
+        
+        return response()->json(
+            LedgerService::createLedger(
+                $request->title,
+                $request->kind,
+                $request->input('balance', 0),
+                $request->input('canReceivePayment', false)
+            ));
     }
 
     public function update(Request $request) {
-        $this->validate($request, [
-            'id' => 'required|integer',
-            'title' => 'required|unique:ledgers|max:50|min:3|string',
-            'kind' => 'required|in:BANK,CASH,PAYABLES,RECEIVABLES,EXPENSE,INCOME',
-        ]);
-
-        $ledger = $this->ledgerService->updateLedger(
-            $request->id,
-            $request->title,
-            $request->kind
+        $this->validate(
+            $request, LedgerService::getValidationRules(false, true)
         );
-        
-        return response()->json($ledger);
+        return response()->json(
+            LedgerService::updateLedger(
+                $request->id,
+                $request->title,
+                $request->input('kind'),
+                $request->input('canReceivePayment')
+            )
+        );
     }
 
     public function takeBalanceSnapshot() {
-        return response()->json($this->ledgerService->takeBalanceSnapshot());
+        return response()->json(LedgerService::takeBalanceSnapshot());
     }
 
     public function selectBalance(Request $request) {

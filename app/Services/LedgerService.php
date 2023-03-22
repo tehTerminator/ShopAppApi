@@ -3,66 +3,127 @@
 namespace App\Services;
 
 use App\Models\Ledger;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
-use App\Models\BalanceSnapShot;
 use App\Models\Voucher;
-use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use App\Models\BalanceSnapShot;
+use Illuminate\Support\Facades\DB;
 
-class LedgerService {
-    public function createLedger(
-        string $title, 
-        string $kind, 
-        int $balance, 
+class LedgerService
+{
+
+    protected static $validationRules = [
+        'id' => ['integer', 'exists:App\Models\Ledger,id'],
+        'title' => ['required', 'string'],
+        'kind' => ['required', 'in:BANK,WALLETS,DEPOSITS,CASH,PAYABLES,RECEIVABLES,EXPENSE,INCOME'],
+    ];
+
+    public static function createLedger(
+        string $title,
+        string $kind,
         $can_receive_payment = false
     ) {
         $ledger = Ledger::create([
             'title' => $title,
             'kind' => $kind,
-            'balance' => $balance,
             'can_receive_payment' => $can_receive_payment
         ]);
         return $ledger;
     }
 
-    public function updateLedger(
-        int $id, 
-        string $title, 
-        string $kind
+    public static function updateLedger(
+        int $id,
+        string $title,
+        string $kind = NULL,
+        bool $can_receive_payment = NULL
     ) {
         $ledger = Ledger::findOrFail($id);
         $ledger->title = $title;
-        $ledger->kind = $kind;
+
+        if (!is_null($kind)) {
+            $ledger->kind = $kind;
+        }
+
+        if (!is_null($can_receive_payment)) {
+            $ledger->can_receive_payment = $can_receive_payment;
+        }
+
         $ledger->save();
         $ledger->refresh();
         return $ledger;
     }
 
-    public function takeBalanceSnapshot() {
-        $ledgers = Ledger::all();
-        foreach ($ledgers as $ledger) {
-            # code...
-            $this->takeSnapshotofLedger($ledger);
-        }
+    public static function takeCompleteBalanceSnapshot()
+    {
+        DB::beginTransaction();
 
-        return BalanceSnapshot::whereDate('created_at', Carbon::now())
-        ->with('ledger')->get();
+        try {
+            BalanceSnapShot::whereDate('created_at', Carbon::now())->delete();
+            Ledger::select('id', 'balance')->each(function ($ledger) {
+                $opening = BalanceSnapShot::where('ledger_id', $ledger->id)
+                    ->orderBy('created_at', 'desc')
+                    ->first()->balance;
+                $credit = self::reduceAmount($ledger->id);
+                $debit = self::increaseAmount($ledger->id);
+                $closing = $opening - $credit + $debit;
+
+                self::takeLedgerBalanceSnapshot($ledger->id, $opening, $closing);
+            });
+            DB::commit();
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return response($ex);
+        }
     }
 
-
-    public function takeSnapshotofLedger(Ledger $ledger) {
-        $row = BalanceSnapshot::where('ledger_id', $ledger->id)
-        ->whereDate('created_at', Carbon::now())
-        ->first();
-        if(empty($row)) {
+    public static function takeLedgerBalanceSnapshot(int $ledger_id, float $opening, float $closing)
+    {
+        $row = BalanceSnapShot::where('ledger_id', $ledger_id)
+            ->whereDate('created_at', Carbon::now())
+            ->first();
+        if (empty($row)) {
             BalanceSnapShot::new([
-                'ledger_id' => $ledger->id,
-                'balance' => $ledger->balance
+                'ledger_id' => $ledger_id,
+                'opening' => $opening,
+                'closing' => $closing
             ]);
-        } else {
-            $row->balance = $ledger->balance;
+            return;
         }
+
+        $row->opening = $opening;
+        $row->closing = $closing;
+        $row->save();
+        return;
     }
 
-    public function __construct(){ }
+    public static function getValidationRules($uniqueTitle = false, $idRequired = false)
+    {
+        $rules = self::$validationRules;
+        if ($uniqueTitle) {
+            array_push($rules['title'], 'unique:App\Models\Ledger');
+        }
+
+        if ($idRequired) {
+            array_push($rules['id'], 'required');
+        }
+
+        return $rules;
+    }
+
+    private static function reduceAmount(int $ledger_id)
+    {
+        $creditAmount = Voucher::where('cr', $ledger_id)
+            ->whereDate('created_at', Carbon::now())
+            ->sum('amount');
+        return $creditAmount;
+    }
+
+    private static function increaseAmount(int $ledger_id)
+    {
+        $debitAmount = Voucher::where('dr', $ledger_id)
+            ->whereDate('created_at', Carbon::now())
+            ->sum('amount');
+        return $debitAmount;
+    }
+
+    public function __construct(){}
 }
