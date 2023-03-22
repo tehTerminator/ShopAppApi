@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\Stock;
+use App\Models\StockUsageTemplate;
 
-class StockService {
+class StockService
+{
 
     public static $validationRules = [
         'id' => ['required', 'numeric'],
@@ -12,9 +14,9 @@ class StockService {
         'quantity' => ['required', 'numeric', 'min:0']
     ];
 
-    public function __construct() { }
 
-    public static function create(string $title, int $quantity) {
+    public static function create(string $title, int $quantity)
+    {
         $stock = Stock::create([
             'title' => $title,
             'quantity' => $quantity
@@ -23,7 +25,8 @@ class StockService {
         return $stock;
     }
 
-    public static function update(int $id, string $title) {
+    public static function update(int $id, string $title)
+    {
         $stock = Stock::findOrFail($id);
         if ($stock->title === $title) {
             return $stock;
@@ -35,12 +38,25 @@ class StockService {
         return $stock;
     }
 
-    public static function delete(int $id) {
+    public static function delete(int $id)
+    {
         $stock = Stock::findOrFail($id);
         $stock->delete();
     }
 
-    public static function getValidationRules($uniqueTitle = true) {
+    public static function createTemplate(int $stock_id, int $product_id, float $quantity)
+    {
+        return StockUsageTemplate::updateOrCreate(
+            [
+                'stock_id' => $stock_id,
+                'product_id' => $product_id,
+            ],
+            ['quantity' => $quantity]
+        );
+    }
+
+    public static function getValidationRules($uniqueTitle = true)
+    {
         if ($uniqueTitle) {
             return StockService::$validationRules;
         }
@@ -49,4 +65,7 @@ class StockService {
         unset($rules['title'][1]);
         return $rules;
     }
+
+    
+    public function __construct(){  }
 }
