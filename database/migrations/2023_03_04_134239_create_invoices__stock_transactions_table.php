@@ -20,7 +20,6 @@ class CreateInvoicesStockTransactionsTable extends Migration
             $table->unsignedBigInteger('stock_item_id');
             $table->foreign('stock_item_id')->references('id')->on('stock__items');
             $table->double('quantity');
-            $table->double('rate');
             $table->timestamps();
         });
     }
