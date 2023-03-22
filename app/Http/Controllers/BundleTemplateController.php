@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PosTemplate;
+use App\Models\BundleTemplate;
 use Illuminate\Http\Request;
 
-class PosTemplateController extends Controller
+class BundleTemplateController extends Controller
 {
     /**
      * Create a new controller instance.
@@ -20,14 +20,14 @@ class PosTemplateController extends Controller
 
     public function create(Request $request) {
         $this->validate($request, [
-            'positem_id' => 'required|integer|min:1',
+            'bundle_id' => 'required|integer|min:1',
             'item_id' => 'required|min:1|integer',
             'kind' => 'required|in:PRODUCT,LEDGER',
             'rate' => 'required|min:1|numeric',
             'quantity' => 'required|integer|min:1'
         ]);
-        $template = PosTemplate::create([
-            'positem_id' => $request->input('positem_id'),
+        $template = BundleTemplate::create([
+            'bundle_id' => $request->input('bundle_id'),
             'item_id' => $request->input('item_id'),
             'kind' => $request->input('kind'),
             'rate' => $request->input('rate'),
@@ -39,15 +39,15 @@ class PosTemplateController extends Controller
     public function update(Request $request) {
         $this->validate($request, [
             'id' => 'required|integer|min:1',
-            'positem_id' => 'required|integer|min:1',
+            'bundle_id' => 'required|integer|min:1',
             'item_id' => 'required|min:1|integer',
             'kind' => 'required|in:PRODUCT,LEDGER',
             'rate' => 'required|min:1|numeric',
             'quantity' => 'required|numeric|min:1'
         ]);
 
-        $template = PosTemplate::findOrFail($request->input('id'));
-        $template->positem_id = $request->input('positem_id');
+        $template = BundleTemplate::findOrFail($request->input('id'));
+        $template->bundle_id = $request->input('bundle_id');
         $template->item_id = $request->input('item_id');
         $template->kind = $request->input('kind');
         $template->rate = $request->input('rate');
@@ -63,7 +63,7 @@ class PosTemplateController extends Controller
             'id' => 'required|integer|min:1'
         ]);
 
-        PosTemplate::findOrFail($request->input('id'))->delete();
+        BundleTemplate::findOrFail($request->input('id'))->delete();
         return response()->json(['message'=>'Template Deleted Successfully']);
     }
 }

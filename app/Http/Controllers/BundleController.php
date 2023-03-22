@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PosItem;
-use App\Models\PosTemplate;
+use App\Models\Bundle;
+use App\Models\BundleTemplate;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 
-class PosItemController extends Controller
+class BundleController extends Controller
 {
     /**
      * Create a new controller instance.
@@ -20,10 +20,10 @@ class PosItemController extends Controller
     }
 
     public function select() {
-        $posItems = Cache::remember('posItems', 6000, function() {
-            return PosItem::with(['pos_templates'])->get();
+        $bundles = Cache::remember('bundles', 6000, function() {
+            return Bundle::with('bundle_template')->get();
         });
-        return response()->json($posItems);
+        return response()->json($bundles);
     }
 
     public function create(Request $request) {
@@ -32,14 +32,14 @@ class PosItemController extends Controller
             'rate' => 'required|min:1|integer',
         ]);
 
-        $posItem = PosItem::create([
+        $bundle = Bundle::create([
             'title' => $request->input('title'),
             'rate' => $request->input('rate')
         ]);
 
-        Cache::forget('posItems');
+        Cache::forget('bundles');
 
-        return response()->json($posItem);
+        return response()->json($bundle);
     }
 
     public function update(Request $request) {
@@ -49,14 +49,14 @@ class PosItemController extends Controller
             'rate' => 'required|min:1|integer',
         ]);
 
-        $posItem = PosItem::findOrFail($request->input('id'));
-        $posItem->title = $request->input('title');
-        $posItem->rate = $request->input('rate');
-        $posItem->save();
+        $bundle = Bundle::findOrFail($request->input('id'));
+        $bundle->title = $request->input('title');
+        $bundle->rate = $request->input('rate');
+        $bundle->save();
 
-        Cache::forget('posItems');
+        Cache::forget('bundles');
 
-        return response()->json($posItem);
+        return response()->json($bundle);
     }
 
     public function delete(Request $request) {
@@ -64,12 +64,12 @@ class PosItemController extends Controller
             'id' => 'required|integer|min:1'
         ]);
 
-        $posItem = PosItem::findOrFail($request->input('id'));
-        PosTemplate::where('positem_id', $posItem->id)->delete();
-        $posItem->delete();
+        $bundle = Bundle::findOrFail($request->input('id'));
+        Bundle::where('positem_id', $bundle->id)->delete();
+        $bundle->delete();
 
-        Cache::forget('posItems');
+        Cache::forget('bundles');
 
-        return response()->json(['message'=>'PosItem Deleted Successfully']);
+        return response()->json(['message'=>'Bundle Deleted Successfully']);
     }
 }
