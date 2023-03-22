@@ -12,7 +12,7 @@ class Ledger extends Model {
      * @var array
      */
     protected $fillable = [
-        'title', 'kind', 'balance', 'can_receive_payment'
+        'title', 'kind', 'can_receive_payment'
     ];
 
     public function balance_snapshot() {
