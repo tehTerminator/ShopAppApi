@@ -28,4 +28,8 @@ class Invoice extends Model {
     public function detailedTransactions() {
         return $this->hasMany(DetailedTransactions::class, 'invoice_id', 'id');
     }
+
+    public function stockTransactions() {
+        return $this->hasMany(StockTransaction::class, 'invoice_id', 'id');
+    }
 }
