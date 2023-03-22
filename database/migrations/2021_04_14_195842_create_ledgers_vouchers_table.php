@@ -24,8 +24,6 @@ class CreateLedgersVouchersTable extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->on('users')->references('id');
             $table->boolean('immutable')->default(false);
-            $table->double('cr_balance')->default(0.00);
-            $table->double('dr_balance')->default(0.00);
             $table->softDeletes();
             $table->timestamps();
         });
