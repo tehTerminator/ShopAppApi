@@ -10,6 +10,13 @@ use Illuminate\Support\Facades\Cache;
 class ProductController extends Controller
 {
 
+    public function select() {
+        $products = Cache::remember('products', 600, function(){
+            return Product::with('stockTemplate')->get();
+        });
+        return response()->json($products);
+    }
+
     public function create(Request $request) {
         $this->validate($request, [
             'title' => 'required|max:50|unique:products|string',
@@ -59,6 +66,7 @@ class ProductController extends Controller
             'product_id' => 'required|exists:App\Modesl\Product,id',
             'quantity' => 'required|numeric|min:0.1'
         ]);
+        Cache::forget('products');
         return response()->json(StockUsageTemplate::new([
             $request->stock_item_id,
             $request->product_id,

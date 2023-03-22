@@ -61,12 +61,6 @@ $router->group(['prefix'=>'ledgers', 'middleware'=>'auth'], function() use ($rou
 });
 
 $router->group(['prefix'=>'products', 'middleware'=>'auth'], function() use ($router) {
-    $router->get('', function() {
-        $products = Cache::remember('products', 600, function(){
-            return Product::all();
-        });
-        return response()->json($products);
-    });
     $router->put('create', ['uses' => 'ProductController@create']);
     $router->post('update', ['uses' => 'ProductController@update']);
     $router->delete('delete/{id}', ['uses' => 'ProductConroller@delete']);
@@ -130,10 +124,10 @@ $router->group(['prefix' => 'get', 'middleware'=>'auth'], function() use ($route
     $router->get('ledgers', function(){ return response()->json(Ledger::all()); });
     // $router->get('ledger\{$id}', function($id){ return response()->json(Ledger::findOrFail($id)); });
     $router->get('stocks', function() { return response()->json(Stock::all()); });
+    $router->get('products', ['uses' => 'ProductController@select']);
 });
 
 $router->group(['prefix' => 'create', 'middleware' => 'auth'], function () use ($router) {
     $router->post('stocks', ['uses' => 'StockController@create']);
+    $router->post('stockUsageTemplate', ['uses' => 'ProductController@addStockTempate']);
 });
-
-$router->get('stocks', ['uses' => 'StockController@demo']);
