@@ -69,6 +69,25 @@ class BundleService {
         ]);
     }
 
+    public static function updateTempate(
+        int $bundle_id,
+        int $template_id,
+        int $item_id,
+        string $kind,
+        float $rate,
+        float $quantity
+    ) {
+        $template = BundleTemplate::findOrFail($template_id);
+        $template->bundle_id = $bundle_id;
+        $template->item_id = $item_id;
+        $template->kind = $kind;
+        $template->rate = $rate;
+        $template->quantity = $quantity;
+        $template->save()->refresh();
+
+        return $template;
+    }
+
     public function __construct() {}
 
 }
