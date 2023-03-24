@@ -5,8 +5,11 @@ namespace App\Services;
 use App\Models\Invoice;
 use Illuminate\Http\Request;
 use App\Models\Ledger;
-use App\Models\Transaction;
 use App\Models\Voucher;
+use App\Models\GeneralTransactions;
+use App\Models\DetailedTransactions;
+use App\Models\StockTransaction;
+use App\Models\Contact;
 use Illuminate\Support\Facades\DB;
 
 class InvoiceService {
@@ -57,7 +60,7 @@ class InvoiceService {
         DB::beginTransaction();
         
         try{
-            DB::commit();
+            
             $invoice = Invoice::create([
                 'customer_id' => $request->input('customer_id'),
                 'user_id' => $user_id,
@@ -65,18 +68,21 @@ class InvoiceService {
                 'paymentMethod' => $request->input('paymentMethod'),
                 'amount' => $request->input('amount'),
             ]);
+
+            self::createTransactions(
+                $invoice->id,
+                $request->input('generalTransactions', []),
+                $request->input('detailedTransactions', []),
+                $request->input('stockTransactions', [])
+            );
+
+            DB::commit();
         } catch(\Exception $e) {
             DB::rollBack();
 
             return response('Error', 500);
         }
 
-        
-        self::createTransactions(
-            $request->get('transactions'), 
-            $invoice->id, 
-            $user_id
-        );
         self::createPaymentVoucher(
             $request->get('transactions'), 
             $invoice->id, 
@@ -90,34 +96,47 @@ class InvoiceService {
         );
     }
 
-    private static function createTransactions(
-        array $transactions, 
+    public function createTransactions(
         int $invoice_id, 
-        int $user_id
-    ) 
-    {
-        for($i=0; $i < count($transactions); $i++) {
-            $transactions[$i]['invoice_id'] = $invoice_id;
-            $transactions[$i]['user_id'] = $user_id;
-            Transaction::create($transactions[$i]);
+        array $generalTransactions, 
+        array $detailedTransactions, 
+        array $stockTransactions) {
+
+        for($i=0; $i < count($generalTransactions); $i++) {
+            $generalTransactions[$i]['invoice_id'] = $invoice_id;
         }
+
+        for($i = 0; $i < count($detailedTransactions); $i++) {
+            $detailedTransactions[$i]['invoice_id'] = $invoice_id;
+        }
+
+        for($i = 0; $i < count($stockTransactions); $i++) {
+            $stockTransactions[$i]['invoice_id'] = $invoice_id;
+        }
+
+        GeneralTransactions::insert($generalTransactions);
+        DetailedTransactions::insert($detailedTransactions);
+        StockTransaction::insert($stockTransactions);
     }
 
-    private static function createPaymentVoucher(
-        array $transactions, 
-        $invoice_id, 
-        $user_id
-    ) 
-    {
-        $customer = Ledger::where('title', 'Customer')
-        ->where('kind', 'RECEIVABLES')->first();
-        if (!$customer) {
-            $customer = Ledger::create([
-                'title' => 'Customer',
-                'kind' => 'RECEIVABLES'
-            ]);
+    private static function getCustomerLedger($customer_id) {
+        $customer = Contact::findOrFail($customer_id);
+
+        if (!is_null($customer->ledger_id)) {
+            return $customer->ledger_id;
         }
 
+        $ledger_id = Contact::where('title', 'Walk-in Customer')->first()->ledger_id;
+        if (is_null($ledger_id)) {
+            $ledger = Ledger::create(['title' => 'Walk-in Customer','kind' => 'RECEIVABLES']);
+            Contact::create(['title' => 'Walk-in Customer','address' => 'Ashoknagar', 'ledger_id' => $ledger->id]);
+            return $ledger->id;
+        }
+
+        return $ledger_id;
+    }
+
+    private static function getSalesLedgerId() {
         $sales = Ledger::where('title', 'Sales')->first();
         if (!$sales) {
             $sales = Ledger::create([
@@ -126,13 +145,27 @@ class InvoiceService {
             ]);
         }
 
+        return $sales->id;
+
+    }
+
+    private static function createPaymentVoucher(
+        array $transactions,
+        int $customer_id,
+        int $invoice_id, 
+        int $user_id
+    ) 
+    {
+        $customer_ledger = self::getCustomerLedger($customer_id);
+        $sales_ledger_id = self::getSalesLedgerId();
+        
         $saleAmount = 0;
 
         for ($i = 0; $i < count($transactions); $i++) {
             if ($transactions[$i]['item_type'] === 'LEDGER') {
                 Voucher::create([
                     'cr' => $transactions[$i]['item_id'],
-                    'dr' => $customer->id,
+                    'dr' => $customer_ledger,
                     'narration' => 'Payment Invoice #' . $invoice_id,
                     'amount' => self::getAmount($transactions[$i]),
                     'user_id' => $user_id
@@ -144,8 +177,8 @@ class InvoiceService {
 
         if ($saleAmount > 0) {
             Voucher::create([
-                'cr' => $sales->id,
-                'dr' => $customer->id,
+                'cr' => $sales_ledger_id,
+                'dr' => $customer_ledger,
                 'narration' => 'Sale Invoice #' . $invoice_id,
                 'amount' => $saleAmount,
                 'user_id' => $user_id
