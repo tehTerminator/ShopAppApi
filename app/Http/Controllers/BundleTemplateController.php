@@ -3,25 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\BundleTemplate;
-<<<<<<< HEAD:app/Http/Controllers/BundleTemplateController.php
-=======
-use App\Services\BundleService;
->>>>>>> 205dbe79be83201febf27f0369d3b07ce586ba7d:app/Http/Controllers/PosTemplateController.php
 use Illuminate\Http\Request;
+use App\Services\BundleService;
 
 class BundleTemplateController extends Controller
 {
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-
     public function create(Request $request) {
         $this->validate($request, [
             'bundle_id' => 'required|integer|min:1',
@@ -30,14 +16,16 @@ class BundleTemplateController extends Controller
             'rate' => 'required|min:1|numeric',
             'quantity' => 'required|integer|min:1'
         ]);
-        $template = BundleTemplate::create([
-            'bundle_id' => $request->input('bundle_id'),
-            'item_id' => $request->input('item_id'),
-            'kind' => $request->input('kind'),
-            'rate' => $request->input('rate'),
-            'quantity' => $request->input('quantity'),
-        ]);
-        return response()->json($template);
+
+        return response()->json(
+            BundleService::createTemplate(
+                $request->bundle_id,
+                $request->item_id,
+                $request->kind,
+                $request->rate,
+                $request->quantity
+            )
+        );
     }
 
     public function update(Request $request) {
@@ -73,10 +61,20 @@ class BundleTemplateController extends Controller
 
     public function delete(Request $request) {
         $this->validate($request, [
-            'id' => 'required|integer|min:1'
+            'id' => [
+                'exists:App\Models\BundleTemplate,id',
+                'required',
+                'integer',
+                'min:1'
+            ]
         ]);
-
-        BundleTemplate::findOrFail($request->input('id'))->delete();
-        return response()->json(['message'=>'Template Deleted Successfully']);
+        BundleService::deleteTemplate($request->id);
     }
+
+     /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct(){}
 }

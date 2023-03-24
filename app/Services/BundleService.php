@@ -9,6 +9,19 @@ use App\Models\BundleTemplate;
 
 class BundleService {
 
+    // To Be Implemented Later
+    // private static $bundleValidationRules = [
+    //     'id' => [
+    //         'exists:App\Models\Bundle,id', 'required', 'min:1'
+    //     ],
+    //     'title' => [
+    //         'unique:App\Models\Bundle,title', 'required', 'min:3'
+    //     ],
+    //     'rate' => [
+    //         'required', 'numeric', 'min:1'
+    //     ]
+    // ];
+
     public static function selectBundle() {
         $Bundles = Cache::remember('Bundles', 6000, function() {
             return Bundle::with(['templates'])->get();
@@ -17,12 +30,13 @@ class BundleService {
     }
 
     public static function createBundle(string $title, float $rate) {
+
         return Bundle::create([
             'title' => $title,
             'rate' => $rate
         ]);
-
         Cache::forget('Bundles');
+
     }
 
     public static function updateBundle(int $id, string $title, float $rate) {
@@ -69,7 +83,7 @@ class BundleService {
         ]);
     }
 
-    public static function updateTempate(
+    public static function updateTemplate(
         int $bundle_id,
         int $template_id,
         int $item_id,
@@ -86,6 +100,11 @@ class BundleService {
         $template->save()->refresh();
 
         return $template;
+    }
+
+    public static function deleteTemplate(int $id) {
+        BundleTemplate::findOrFail($id)->delete();
+        return response()->json(['message'=>'Template Deleted Successfully']);
     }
 
     public function __construct() {}
