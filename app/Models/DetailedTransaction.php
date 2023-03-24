@@ -11,7 +11,6 @@ class DetailedTransactions extends Model {
     protected $fillable = [
         'invoice_id',
         'item_id',
-        'user_id',
         'kind',
         'description',
         'quantity',
