@@ -57,7 +57,6 @@ class LedgerService
         DB::beginTransaction();
 
         try {
-            BalanceSnapShot::whereDate('created_at', Carbon::now())->delete();
             Ledger::select('id', 'balance')->each(function ($ledger) {
                 $opening = BalanceSnapShot::where('ledger_id', $ledger->id)
                     ->orderBy('created_at', 'desc')
