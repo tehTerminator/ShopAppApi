@@ -12,10 +12,16 @@ class Contact extends Model {
      * @var array
      */
     protected $fillable = [
-        'title', 'address', 'mobile'
+        'title', 'address', 'mobile', 'ledger_id'
     ];
 
     public function sales_invoices() {
-        return $this->hasMany(SalesInvoices::class);
+        return $this->hasMany(Invoice::class);
     }
+
+    public function ledger() {
+        return $this->hasOne(Ledger::class);
+    }
+
+
 }
