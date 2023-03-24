@@ -7,33 +7,34 @@ use Illuminate\Http\Request;
 use App\Models\Ledger;
 use App\Models\Transaction;
 use App\Models\Voucher;
+use Illuminate\Support\Facades\DB;
 
 class InvoiceService {
 
-    public function getInvoices(Request $request) {
+    public static function select(Request $request) {
         if ($request->has('id')) {
-            return $this->getInvoiceById($request->id);
+            return self::getInvoiceById($request->id);
         }
 
         else if ($request->has('createdAt')) {
-            return $this->getInvoiceByDate($request->userId, $request->createdAt);
+            return self::getInvoiceByDate($request->userId, $request->createdAt);
         }
 
         else if ($request->has('customerId')) {
-            return $this->getInvoiceByCustomer($request->customerId, $request->month, $request->input('paid', false));
+            return self::getInvoiceByCustomer($request->customerId, $request->month, $request->input('paid', false));
         }
 
         return response('Invalid Query Parameter', 406);
     }
 
-    public function getInvoiceById(int $id) {
+    public static function getInvoiceById(int $id) {
         $invoice = Invoice::where('id', $id)
-        ->with(['customer', 'transactions'])
+        ->with(['customer', 'generalTransactions'])
         ->first();
         return $invoice;
     }
 
-    public function getInvoiceByDate(int $user, $created_at) {
+    public static function getInvoiceByDate(int $user, $created_at) {
         $invoices = Invoice::whereDate('created_at', $created_at)
             ->where('user_id', $user)
             ->with(['customer'])->get();
@@ -41,7 +42,7 @@ class InvoiceService {
         return $invoices;
     }
 
-    public function getInvoiceByCustomer(int $customer_id, string $created_at, bool $paid) {
+    public static function getInvoiceByCustomer(int $customer_id, string $created_at, bool $paid) {
         $invoices = Invoice::where('created_at', 'LIKE', $created_at . '%')
         ->where('paid', $paid);
         
@@ -52,25 +53,36 @@ class InvoiceService {
         return $invoices;
     }
 
-    public function createNewInvoice(Request $request, int $user_id) {
-        $invoice = Invoice::create([
-            'customer_id' => $request->input('customer_id'),
-            'user_id' => $user_id,
-            'paid' => $request->boolean('paid'),
-            'paymentMethod' => $request->input('paymentMethod'),
-            'amount' => $request->input('amount'),
-        ]);
-        $this->createTransactions(
+    public static function createNewInvoice(Request $request, int $user_id) {
+        DB::beginTransaction();
+        
+        try{
+            DB::commit();
+            $invoice = Invoice::create([
+                'customer_id' => $request->input('customer_id'),
+                'user_id' => $user_id,
+                'paid' => $request->boolean('paid'),
+                'paymentMethod' => $request->input('paymentMethod'),
+                'amount' => $request->input('amount'),
+            ]);
+        } catch(\Exception $e) {
+            DB::rollBack();
+
+            return response('Error', 500);
+        }
+
+        
+        self::createTransactions(
             $request->get('transactions'), 
             $invoice->id, 
             $user_id
         );
-        $this->createPaymentVoucher(
+        self::createPaymentVoucher(
             $request->get('transactions'), 
             $invoice->id, 
             $user_id
         );
-        $this->createReceiptVoucher(
+        self::createReceiptVoucher(
             $invoice->paymentMethod, 
             $invoice->id,
             $invoice->amount, 
@@ -78,7 +90,7 @@ class InvoiceService {
         );
     }
 
-    private function createTransactions(
+    private static function createTransactions(
         array $transactions, 
         int $invoice_id, 
         int $user_id
@@ -91,7 +103,7 @@ class InvoiceService {
         }
     }
 
-    private function createPaymentVoucher(
+    private static function createPaymentVoucher(
         array $transactions, 
         $invoice_id, 
         $user_id
@@ -122,11 +134,11 @@ class InvoiceService {
                     'cr' => $transactions[$i]['item_id'],
                     'dr' => $customer->id,
                     'narration' => 'Payment Invoice #' . $invoice_id,
-                    'amount' => $this->getAmount($transactions[$i]),
+                    'amount' => self::getAmount($transactions[$i]),
                     'user_id' => $user_id
                 ]);
             } else {
-                $saleAmount += $this->getAmount($transactions[$i]);
+                $saleAmount += self::getAmount($transactions[$i]);
             }
         }
 
@@ -141,7 +153,7 @@ class InvoiceService {
         }
     }
 
-    private function createReceiptVoucher(
+    private static function createReceiptVoucher(
         string $paymentMethod, 
         int $invoice_id, 
         float $amount, 
@@ -170,13 +182,13 @@ class InvoiceService {
         return response()->json(['status' => 'Success']);
     }
 
-    public function delete(int $invoice_id) {
+    public static function delete(int $invoice_id) {
         Transaction::where('invoice_id', $invoice_id)->delete();
         Invoice::find($invoice_id)->delete();
         Voucher::where('narration', 'LIKE', '%' . $invoice_id)->delete();
     }
 
-    private function getAmount($transaction) {
+    private static function getAmount($transaction) {
         return 
             ($transaction['quantity'] * $transaction['rate']) 
             * (1 - $transaction['discount']/100);
