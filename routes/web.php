@@ -120,20 +120,26 @@ $router->group(['prefix'=>'invoices'], function() use ($router) {
 });
 
 
-$router->group(['prefix' => 'get', 'middleware'=>'auth'], function() use ($router) {
-    $router->get('ledgers', function(){ return response()->json(Ledger::all()); });
-    $router->get('stocks', function() { return response()->json(Stock::all()); });
-    $router->get('products', ['uses' => 'ProductController@select']);
+$router->group(['prefix' => 'get'], function() use ($router) {
     $router->get('bundles', ['uses' => 'BundleController@select']);
+    $router->post('general-item', ['uses' => 'GeneralItemController@select']);
+    $router->get('ledgers', function(){ return response()->json(Ledger::all()); });
+    $router->get('products', ['uses' => 'ProductController@select']);
+    $router->get('stocks', function() { return response()->json(Stock::all()); });
 });
 
 $router->group(['prefix' => 'create', 'middleware' => 'auth'], function () use ($router) {
-    $router->post('stock', ['uses' => 'StockController@create']);
-    $router->post('product/stock-usage', ['uses' => 'ProductController@addStockTempate']);
     $router->post('bundle', ['uses' => 'BundleController@create']);
     $router->post('bundle/template', ['uses' => 'BundleController@createTemplate']);
+    $router->post('product/stock-usage', ['uses' => 'ProductController@addStockTempate']);
+    $router->post('stock', ['uses' => 'StockController@create']);
 });
 
 $router->group(['prefix' => 'update', 'middleware' => 'auth'], function () use ($router) {
     $router->put('bundle', ['uses' => 'BundleController@update']);
+});
+
+$router->group(['prefix' => 'delete', 'middleware' => 'auth'], function () use ($router) {
+    $router->delete('bundle/{$id}', ['uses' => 'BundleController@delete']);
+    $router->delete('bundle/template/{$id}', ['uses'=> 'BundleController@deleteTemplate']);
 });
