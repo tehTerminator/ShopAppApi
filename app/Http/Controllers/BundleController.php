@@ -76,37 +76,6 @@ class BundleController extends Controller
         );
     }
 
-    public function updateTemplate(Request $request) {
-        $this->validate($request, [
-            'id' => [
-                'exists:App\Models\BundleTemplate,id', 'required', 
-                'integer', 
-                'min:1'
-            ],
-            'bundle_id' => [
-                'exists:App\Models\Bundle,id', 
-                'required', 
-                'integer', 
-                'min:1'
-            ],
-            'item_id' => ['required', 'min:1', 'integer'],
-            'kind' => ['required', 'in:PRODUCT,LEDGER'],
-            'rate' => ['required', 'min:1', 'numeric'],
-            'quantity' => ['required', 'numeric', 'min:1']
-        ]);
-
-        return response()->json(
-            BundleService::updateTemplate(
-                $request->bundle_id,
-                $request->id,
-                $request->item_id,
-                $request->kind,
-                $request->rate,
-                $request->quantity
-            )
-        ); 
-    }
-
     public function deleteTemplate(Request $request) {
         $this->validate($request, [
             'id' => [
