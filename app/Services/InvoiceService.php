@@ -85,6 +85,7 @@ class InvoiceService {
 
         self::createPaymentVoucher(
             $request->get('transactions'), 
+            $request->get('customer_id'),
             $invoice->id, 
             $user_id
         );
@@ -216,7 +217,9 @@ class InvoiceService {
     }
 
     public static function delete(int $invoice_id) {
-        Transaction::where('invoice_id', $invoice_id)->delete();
+        GeneralTransactions::where('invoice_id', $invoice_id)->delete();
+        DetailedTransactions::where('invoice_id', $invoice_id)->delete();
+        StockTransaction::where('invoice_id', $invoice_id)->delete();
         Invoice::find($invoice_id)->delete();
         Voucher::where('narration', 'LIKE', '%' . $invoice_id)->delete();
     }
