@@ -122,7 +122,6 @@ $router->group(['prefix'=>'invoices'], function() use ($router) {
 
 $router->group(['prefix' => 'get', 'middleware'=>'auth'], function() use ($router) {
     $router->get('ledgers', function(){ return response()->json(Ledger::all()); });
-    // $router->get('ledger\{$id}', function($id){ return response()->json(Ledger::findOrFail($id)); });
     $router->get('stocks', function() { return response()->json(Stock::all()); });
     $router->get('products', ['uses' => 'ProductController@select']);
     $router->get('bundles', ['uses' => 'BundleController@select']);
@@ -132,6 +131,9 @@ $router->group(['prefix' => 'create', 'middleware' => 'auth'], function () use (
     $router->post('stock', ['uses' => 'StockController@create']);
     $router->post('product/stock-usage', ['uses' => 'ProductController@addStockTempate']);
     $router->post('bundle', ['uses' => 'BundleController@create']);
-    $router->post('bundle/template', ['uses' => 'BundleTemplateController@create']);
+    $router->post('bundle/template', ['uses' => 'BundleController@createTemplate']);
+});
 
+$router->group(['prefix' => 'update', 'middleware' => 'auth'], function () use ($router) {
+    $router->put('bundle', ['uses' => 'BundleController@update']);
 });
