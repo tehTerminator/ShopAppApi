@@ -18,11 +18,11 @@ class CreateLedgersTable extends Migration
             $table->string('title');
             $table->enum('kind', [
                 'BANK',
-                'WALLETS',
-                'DEPOSITS',
+                'WALLET',
+                'DEPOSIT',
                 'CASH', 
-                'PAYABLES', 
-                'RECEIVABLES', 
+                'PAYABLE', 
+                'RECEIVABLE', 
                 'EXPENSE', 
                 'INCOME'
             ]);
