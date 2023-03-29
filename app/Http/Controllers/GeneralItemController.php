@@ -19,7 +19,7 @@ class GeneralItemController extends Controller {
 
         $generalItems = Cache::remember('generalItem', 3600, function() {
             $products = Product::select('id', 'title', 'rate')->get();
-            $ledgers = Ledger::select('id', 'title')->whereIn('kind', ['BANK', 'CASH'])->get();
+            $ledgers = Ledger::select('id', 'title')->whereIn('kind', ['BANK', 'CASH', 'WALLET'])->get();
             $bundles = Bundle::select('id', 'title', 'rate')->get();
 
             $items = [];
@@ -29,10 +29,10 @@ class GeneralItemController extends Controller {
                 array_push($items, $item);
             }
 
-            foreach($ledgers as $ledger) {
+            foreach($ledgers as $item) {
                 $item['type'] = $this->TYPE['LEDGER'];
                 $item['rate'] = 0;
-                array_push($items, $ledger);
+                array_push($items, $item);
             }
 
             foreach($bundles as $item) {
@@ -44,6 +44,11 @@ class GeneralItemController extends Controller {
         });
 
         return response()->json($generalItems);
+    }
+
+    public function removeCache() {
+        Cache::delete('generalItem');
+        return response('Cache removed');
     }
 
     public function __costruct() {}
