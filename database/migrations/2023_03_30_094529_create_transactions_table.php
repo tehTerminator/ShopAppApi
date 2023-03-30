@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateInvoicesDetailedTransactionsTable extends Migration
+class CreateTransactionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateInvoicesDetailedTransactionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('invoices__detailed_transactions', function (Blueprint $table) {
+        Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('invoice_id');
             $table->unsignedBigInteger('item_id');
@@ -37,6 +37,6 @@ class CreateInvoicesDetailedTransactionsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sales__detailed_transactions');
+        Schema::dropIfExists('transactions');
     }
 }
