@@ -14,14 +14,10 @@ class InvoiceController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-        //
-        $this->service = new InvoiceService();
-    }
+    public function __construct(){ }
 
     public function select(Request $request) {
-       $data = $this->service->getInvoices($request);
+       $data = InvoiceService::select($request);
        return response()->json($data);
     }
 
@@ -43,11 +39,11 @@ class InvoiceController extends Controller
         
         $user_id = Auth::user()->id;
         
-        $this->service->createNewInvoice($request, $user_id);
+        InvoiceService::createNewInvoice($request, $user_id);
     }
 
     public function delete(int $id) {
-        $this->service->delete($id);
+        InvoiceService::delete($id);
         return response()->json(['message' => 'Invoice #' . $id . 'Deleted Successfully']);
     }
 }
