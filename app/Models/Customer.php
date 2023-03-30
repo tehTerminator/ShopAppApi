@@ -12,7 +12,7 @@ class Customer extends Model {
      * @var array
      */
     protected $fillable = [
-        'title', 'address'
+        'title', 'address', 'mobile'
     ];
 
     public function invoices() {

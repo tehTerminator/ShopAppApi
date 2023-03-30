@@ -17,6 +17,7 @@ class CreateCustomersTable extends Migration
             $table->id();
             $table->string('title', 100);
             $table->string('address');
+            $table->string('mobile', 10)->nullable()->default(NULL);
             $table->unsignedBigInteger('ledger_id')->nullable()->default(0);
             $table->timestamps();
 
