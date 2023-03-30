@@ -17,7 +17,10 @@ class CreateCustomersTable extends Migration
             $table->id();
             $table->string('title', 100);
             $table->string('address');
+            $table->unsignedBigInteger('ledger_id')->nullable()->default(0);
             $table->timestamps();
+
+            $table->foreign('ledger_id')->references('id')->on('ledger');
         });
     }
 
