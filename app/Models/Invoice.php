@@ -12,7 +12,7 @@ class Invoice extends Model {
      * @var array
      */
     protected $fillable = [
-        'customer_id', 'paymentMethod', 'paid', 'amount', 'user_id'
+        'customer_id', 'paid', 'amount', 'user_id'
     ];
 
     public function customer() {
@@ -21,5 +21,9 @@ class Invoice extends Model {
 
     public function transactions() {
         return $this->hasMany(Transaction::class, 'invoice_id', 'id');
+    }
+
+    public function paymentInfo() {
+        return $this->hasMany(PaymentInfo::class);
     }
 }

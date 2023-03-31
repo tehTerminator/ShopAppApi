@@ -2,18 +2,18 @@
 
 namespace App\Services;
 
+use App\Models\Balance;
 use App\Models\Ledger;
+use App\Models\Voucher;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
-use App\Models\Balance;
-use App\Models\Voucher;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LedgerService {
     public function createLedger(string $title, string $kind) {
         $ledger = Ledger::create([
             'title' => $title,
-            'kind' => $kind
+            'kind' => $kind,
         ]);
         return $ledger;
     }
@@ -22,20 +22,28 @@ class LedgerService {
         $ledger = Ledger::findOrFail($id);
         $ledger->title = $title;
         $ledger->kind = $kind;
-        $ledger->save();
-        $ledger = Ledger::find($id);
+        $ledger->save->refresh();
+
         return $ledger;
     }
 
     public function autoUpdateBalance() {
-        $ledgers = Ledger::whereIn('kind', ['CASH', 'BANK'])->get();
-        foreach ($ledgers as $ledger) {
-            # code...
-            $this->autoSetBalanceById($ledger->id);
-        }
+        DB::beginTransaction();
 
-        return Balance::whereDate('created_at', Carbon::now())
-        ->with('ledger')->get();
+        try {
+            $ledgers = Ledger::all();
+            foreach ($ledgers as $ledger) {
+                # code...
+                $this->autoSetBalanceById($ledger->id);
+            }
+    
+            $ledgertoShow = Ledger::where('kind', ['BANK', 'CASH', 'WALLET'])->pluck('id')->get()->toArray();
+            return Balance::whereDate('created_at', Carbon::now())->whereIn('ledger_id', $ledgertoShow)
+            ->with('ledger')->get();
+            DB::commit();
+        } catch (\Exception $ex) {
+            DB::rollBack();
+        }
     }
 
     public function updateBalance(int $id, $opening, $closing) {
@@ -76,9 +84,8 @@ class LedgerService {
     }
 
     public function getLatestClosing(int $ledger_id) {
-        $yesterday = Carbon::now()->subDays(1);
         $balance  = Balance::where('ledger_id', $ledger_id)
-        ->whereDate('created_at', $yesterday)->first();
+        ->orderBy('id', 'desc')->first();
         if(empty($balance)) {
             return 0;
         }

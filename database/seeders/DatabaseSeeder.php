@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class
         ]);
 
-        Customer::create(['title' => 'Cash','address' => 'Ashoknagar']);
+        Customer::create(['title' => 'Walk-in Customer','address' => 'Ashoknagar', 'ledger_id' => 1]);
 
 
         DB::unprepared('DROP FUNCTION IF EXISTS calcTransactionAmount');

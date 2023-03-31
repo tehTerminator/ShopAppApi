@@ -14,18 +14,15 @@ class InvoiceController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-        //
-        $this->service = new InvoiceService();
-    }
+    public function __construct(){}
 
     public function select(Request $request) {
-       $data = $this->service->getInvoices($request);
+       $data = InvoiceService::getInvoices($request);
        return response()->json($data);
     }
 
     public function create(Request $request) {
+
         $this->validate($request, [
             'customer_id' => 'required|integer|min:1',
             'paymentMethod' => 'required',
@@ -40,14 +37,17 @@ class InvoiceController extends Controller
             'transaction.*.rate' => 'required|numeric|min:1',
             'transaction.*.discount' => 'required|numeric|min:0|max:100'
         ]);
+
         
         $user_id = Auth::user()->id;
         
-        $this->service->createNewInvoice($request, $user_id);
+        $response = InvoiceService::createNewInvoice($request, $user_id);
+        return response()->json($response);
+        
     }
 
     public function delete(int $id) {
-        $this->service->delete($id);
+        InvoiceService::delete($id);
         return response()->json(['message' => 'Invoice #' . $id . 'Deleted Successfully']);
     }
 }

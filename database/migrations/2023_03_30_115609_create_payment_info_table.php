@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateInvoicesTable extends Migration
+class CreatePaymentInfoTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,16 +13,17 @@ class CreateInvoicesTable extends Migration
      */
     public function up()
     {
-        Schema::create('invoices', function (Blueprint $table) {
+        Schema::create('payment_info', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('customer_id');
+            $table->unsignedBigInteger('invoice_id');
             $table->unsignedBigInteger('user_id');
-            $table->boolean('paid')->default(true);
+            $table->unsignedBigInteger('voucher_id');
             $table->double('amount');
             $table->timestamps();
 
-            $table->foreign('customer_id')->references('id')->on('customers');
+            $table->foreign('invoice_id')->references('id')->on('invoices');
             $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('voucher_id')->references('id')->on('vouchers');
         });
     }
 
@@ -33,6 +34,6 @@ class CreateInvoicesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('bills');
+        Schema::dropIfExists('payment_info');
     }
 }
