@@ -53,7 +53,7 @@ class InvoiceController extends Controller
         return response()->json(['message' => 'Invoice #' . $id . 'Deleted Successfully']);
     }
 
-    public function getPaymentInfo(Request $request) {
+    public function selectPaymentInfo(Request $request) {
         $this->validate($request, [
             'id' => 'required|numeric|exists:App\Models\Invoice,id'
         ]);
