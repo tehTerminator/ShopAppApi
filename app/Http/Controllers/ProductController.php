@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use App\Services\GeneralItemService;
 
 class ProductController extends Controller
 {
@@ -59,5 +60,13 @@ class ProductController extends Controller
         Cache::forget('products');
 
         return response()->json(['message'=>'Product Deleted Successfully']);
+    }
+
+    public function getGeneralItems() {
+        $generalItems = Cache::remember('generalItem', 3600, function() {
+            return GeneralItemService::getItems();
+        });
+
+        return response()->json($generalItems);
     }
 }
