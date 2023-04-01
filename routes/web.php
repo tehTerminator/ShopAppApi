@@ -126,4 +126,5 @@ $router->group(['prefix'=>'invoices'], function() use ($router) {
     $router->put('create', ['uses' => 'InvoiceController@create']);
     $router->post('transactions', ['uses' => 'InvoiceController@createTransactions']);
     $router->delete('delete/{id}', ['uses' => 'InvoiceController@delete']);
+    $router->get('paymentInfo', ['uses' => 'InvoiceController@selectPaymentInfo']);
 });
