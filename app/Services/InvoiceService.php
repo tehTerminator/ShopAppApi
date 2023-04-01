@@ -6,10 +6,11 @@ use App\Models\Invoice;
 use Illuminate\Http\Request;
 use App\Models\Ledger;
 use App\Models\Voucher;
-use App\Models\GeneralTransactions;
-use App\Models\DetailedTransactions;
+use App\Models\Transaction;
 use App\Models\StockTransaction;
 use App\Models\Contact;
+use App\Models\PaymentInfo;
+use App\Models\StockUsageTemplate;
 use Illuminate\Support\Facades\DB;
 
 class InvoiceService {
@@ -62,18 +63,31 @@ class InvoiceService {
         try{
             
             $invoice = Invoice::create([
-                'customer_id' => $request->input('customer_id'),
+                'contact_id' => $request->input('contact_id'),
                 'user_id' => $user_id,
                 'paid' => $request->boolean('paid'),
-                'paymentMethod' => $request->input('paymentMethod'),
                 'amount' => $request->input('amount'),
+                'kind' => $request->input('kind')
             ]);
 
             self::createTransactions(
                 $invoice->id,
-                $request->input('generalTransactions', []),
-                $request->input('detailedTransactions', []),
-                $request->input('stockTransactions', [])
+                $request->input('transactions')
+            );
+
+            self::createPaymentVoucher(
+                $request->input('transactions'), 
+                $request->input('contact_id'),
+                $invoice->id,
+                $user_id
+            );
+
+            self::createReceiptVoucher(
+                $request->input('paymentMethod'), 
+                $invoice->id,
+                $invoice->contact_id,
+                $invoice->amount, 
+                $user_id
             );
 
             DB::commit();
@@ -83,41 +97,37 @@ class InvoiceService {
             return response('Error', 500);
         }
 
-        self::createPaymentVoucher(
-            $request->get('transactions'), 
-            $request->get('customer_id'),
-            $invoice->id, 
-            $user_id
-        );
-        self::createReceiptVoucher(
-            $invoice->paymentMethod, 
-            $invoice->id,
-            $invoice->amount, 
-            $user_id
-        );
+
     }
 
-    public function createTransactions(
+    public static function createTransactions(
         int $invoice_id, 
-        array $generalTransactions, 
-        array $detailedTransactions, 
-        array $stockTransactions) {
+        array $transactions) {
 
-        for($i=0; $i < count($generalTransactions); $i++) {
-            $generalTransactions[$i]['invoice_id'] = $invoice_id;
+        $stockTransactions = [];
+
+        for($i=0; $i < count($transactions); $i++) {
+            $transactions[$i]['invoice_id'] = $invoice_id;
+
+            if($transactions[$i]['kind'] == 'PRODUCT') {
+                self::getStockTransactions($stockTransactions, $transactions[$i]);
+            }
         }
 
-        for($i = 0; $i < count($detailedTransactions); $i++) {
-            $detailedTransactions[$i]['invoice_id'] = $invoice_id;
-        }
-
-        for($i = 0; $i < count($stockTransactions); $i++) {
-            $stockTransactions[$i]['invoice_id'] = $invoice_id;
-        }
-
-        GeneralTransactions::insert($generalTransactions);
-        DetailedTransactions::insert($detailedTransactions);
+        Transaction::insert($transactions);
         StockTransaction::insert($stockTransactions);
+
+    }
+
+    private static function getStockTransactions(array &$stockTransctions, array $transaction) {
+        $stockTemplate = StockUsageTemplate::where('product_id', $transaction['item_id'])->get();
+        foreach($stockTemplate as $item) {
+            array_push($stockTransctions, [
+                'invoice_id' => $transaction['invoice_id'],
+                'stock_item_id' => $item->stock_item_id,
+                'quantity' => $transaction['quantity'] * $item->quantity,
+            ]);
+        }
     }
 
     private static function getCustomerLedger($customer_id) {
@@ -188,37 +198,33 @@ class InvoiceService {
     }
 
     private static function createReceiptVoucher(
-        string $paymentMethod, 
+        int $paymentMethod,
         int $invoice_id, 
-        float $amount, 
+        int $customer_id,
+        float $amount,
         int $user_id
     ) 
     {
-        $customer = Ledger::where('title', 'Customer')->where('kind', 'RECEIVABLES')->first();
-        if (!$customer) {
-            $customer = Ledger::create([
-                'title' => 'Customer',
-                'kind' => 'RECEIVABLES'
-            ]);
+        if (is_null($paymentMethod)) {
+            return;
         }
 
-        if ($paymentMethod <> 'UDHAAR') {
-            $receiver_id = explode('#', $paymentMethod)[1];
-            Voucher::create([
-                'cr' => $customer->id,
-                'dr' => $receiver_id,
-                'narration' => 'Receipt Invoice #' . $invoice_id,
-                'amount' => $amount,
-                'user_id' => $user_id
-            ]);
-        }
+        $customer = self::getCustomerLedger($customer_id);
+        Voucher::create([
+            'cr' => $customer->id,
+            'dr' => $paymentMethod,
+            'narration' => 'Payment Received for Invoice #' . $invoice_id,
+            'amount' => $amount,
+            'user_id' => $user_id
+        ]);
+
+        
 
         return response()->json(['status' => 'Success']);
     }
 
     public static function delete(int $invoice_id) {
-        GeneralTransactions::where('invoice_id', $invoice_id)->delete();
-        DetailedTransactions::where('invoice_id', $invoice_id)->delete();
+        Transaction::where('invoice_id', $invoice_id)->delete();
         StockTransaction::where('invoice_id', $invoice_id)->delete();
         Invoice::find($invoice_id)->delete();
         Voucher::where('narration', 'LIKE', '%' . $invoice_id)->delete();

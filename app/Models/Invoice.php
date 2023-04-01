@@ -14,7 +14,7 @@ class Invoice extends Model {
      * @var array
      */
     protected $fillable = [
-        'contact_id', 'paid', 'amount', 'user_id', 'kind'
+        'contact_id', 'paid', 'amount', 'user_id', 'kind
     ];
 
     public function contact() {

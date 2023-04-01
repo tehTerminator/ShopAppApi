@@ -14,7 +14,7 @@ class Transaction extends Model {
     protected $fillable = [
         'invoice_id',
         'item_id',
-        'item_type',
+        'kind',
         'description',
         'quantity',
         'rate',
