@@ -35,7 +35,7 @@ class LedgerController extends Controller
     public function create(Request $request) {
         $this->validate($request, [
             'title' => 'required|unique:ledgers|max:50|min:3|string',
-            'kind' => 'required|in:BANK,CASH,PAYABLES,RECEIVABLES,EXPENSE,INCOME',
+            'kind' => 'required|in:BANK,CASH,WALLET,PAYABLE,RECEIVABLE,EXPENSE,INCOME',
         ]);
 
         $ledger = $this->ledgerService->createLedger($request->title, $request->kind);
@@ -46,7 +46,7 @@ class LedgerController extends Controller
         $this->validate($request, [
             'id' => 'required|integer',
             'title' => 'required|unique:ledgers|max:50|min:3|string',
-            'kind' => 'required|in:BANK,CASH,PAYABLES,RECEIVABLES,EXPENSE,INCOME',
+            'kind' => 'required|in:BANK,CASH,WALLET,PAYABLE,RECEIVABLE,EXPENSE,INCOME',
         ]);
 
         $ledger = $this->ledgerService->updateLedger(
