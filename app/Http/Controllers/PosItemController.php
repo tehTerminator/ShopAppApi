@@ -38,6 +38,7 @@ class PosItemController extends Controller
         ]);
 
         Cache::forget('posItems');
+        Cache::forget('generalItem');
 
         return response()->json($posItem);
     }
