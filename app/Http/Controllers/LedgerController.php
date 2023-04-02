@@ -74,7 +74,9 @@ class LedgerController extends Controller
 
     public function selectBalance(Request $request) {
         $date = $request->query('date', Carbon::now());
-        $data = Balance::whereDate('created_at', $date)
+
+        $assets = Ledger::whereIn('kind', ['BANK', 'CASH', 'WALLET'])->pluck('id')->toArray();
+        $data = Balance::whereDate('created_at', $date)->whereIn('ledger_id', $assets)
         ->with(['ledger'])->get();
         return response($data);
     }

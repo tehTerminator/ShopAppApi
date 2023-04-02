@@ -28,6 +28,9 @@ class LedgerService {
     }
 
     public function autoUpdateBalance() {
+        
+        // return $ledgertoShow;
+
         DB::beginTransaction();
 
         try {
@@ -37,10 +40,10 @@ class LedgerService {
                 $this->autoSetBalanceById($ledger->id);
             }
     
-            $ledgertoShow = Ledger::where('kind', ['BANK', 'CASH', 'WALLET'])->pluck('id')->get()->toArray();
+            $ledgertoShow = Ledger::whereIn('kind', ['BANK', 'CASH', 'WALLET'])->pluck('id')->toArray();
+            DB::commit();
             return Balance::whereDate('created_at', Carbon::now())->whereIn('ledger_id', $ledgertoShow)
             ->with('ledger')->get();
-            DB::commit();
         } catch (\Exception $ex) {
             DB::rollBack();
         }
