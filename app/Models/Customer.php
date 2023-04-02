@@ -22,4 +22,8 @@ class Customer extends Model {
     public function ledger() {
         return $this->hasOne(Ledger::class);
     }
+
+    protected $casts = [
+        'ledger_id' => 'integer'
+    ];
 }

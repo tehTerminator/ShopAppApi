@@ -14,4 +14,11 @@ class PaymentInfo extends Model {
         'voucher_id',
         'amount'
     ];
+
+    protected $casts = [
+        'invoice_id' => 'integer',
+        'user_id' => 'integer',
+        'voucher_id' => 'integer',
+        'amount' => 'double'
+    ];
 }

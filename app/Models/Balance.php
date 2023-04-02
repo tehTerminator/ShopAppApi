@@ -19,4 +19,10 @@ class Balance extends Model {
     public function ledger() {
         return $this->belongsTo(Ledger::class);
     }
+
+    protected $casts = [
+        'ledger_id' => 'integer',
+        'opening' => 'double',
+        'closing' => 'double' 
+    ];
 }

@@ -15,6 +15,13 @@ class Invoice extends Model {
         'customer_id', 'paid', 'amount', 'user_id'
     ];
 
+    protected $casts = [
+        'customer_id' => 'integer',
+        'paid' => 'boolean',
+        'amount' => 'double',
+        'user_id' => 'integer'
+    ];
+
     public function customer() {
         return $this->hasOne(Customer::class, 'id', 'customer_id');
     }

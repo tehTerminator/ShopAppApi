@@ -22,6 +22,15 @@ class Transaction extends Model {
         'user_id'
     ];
 
+    protected $casts = [
+        'invoice_id' => 'integer',
+        'item_id' => 'integer',
+        'quantity' => 'double',
+        'rate' => 'double',
+        'discount' => 'double',
+        'user_id' => 'integer',
+    ]
+
     public function invoice() {
         return $this->hasOne(Invoice::class, 'id', 'invoice_id');
     }

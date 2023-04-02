@@ -16,4 +16,11 @@ class PosTemplate extends Model {
     protected $fillable = [
         'positem_id', 'item_id', 'kind', 'rate', 'quantity'
     ];
+
+    protected $casts = [
+        'positem_id' => 'integer',
+        'item_id' => 'integer',
+        'rate' => 'double',
+        'quantity' => 'double'
+    ];
 }

@@ -14,4 +14,8 @@ class Product extends Model {
     protected $fillable = [
         'title', 'rate'
     ];
+
+    protected $casts = [
+        'rate' => 'double'
+    ];
 }

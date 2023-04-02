@@ -17,6 +17,10 @@ class PosItem extends Model {
         'title', 'rate'
     ];
 
+    protected $casts = [
+        'rate' => 'double'
+    ];
+
     public function pos_templates() {
         return $this->hasMany(PosTemplate::class, 'positem_id', 'id');
     }
