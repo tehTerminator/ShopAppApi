@@ -37,9 +37,14 @@ class InvoiceService
 
     public static function getInvoiceByDate(int $user, $created_at)
     {
+
         $invoices = Invoice::whereDate('created_at', $created_at)
             ->where('user_id', $user)
             ->with(['customer'])->get();
+
+        for($i = 0; $i < count($invoices); $i++) {
+            $invoices[$i]['paymentMethod'] = self::getPaymentMethod($invoices[$i]->id);
+        }
 
         return $invoices;
     }
@@ -53,13 +58,32 @@ class InvoiceService
             $invoices = $invoices->where('customer_id', $customer_id);
         }
         $invoices = $invoices->with(['customer'])->get();
+
+        $invoices->each(function($invoice) {
+            $invoice->push(['paymentMethod' => self::getPaymentMethod($invoice->id)]);
+        });
+
         return $invoices;
+    }
+
+    private static function getPaymentMethod($invoice_id) {
+        $paymentInfo = PaymentInfo::where('invoice_id', $invoice_id)->get();
+        
+        if (count($paymentInfo) == 0) {
+            return '-1';
+        }
+
+        if (count($paymentInfo) == 1) {
+            $voucher_id = $paymentInfo[0]->voucher_id;
+            return Voucher::find($voucher_id)->dr;
+        }
+
+        return 0;
     }
 
     public static function createNewInvoice(Request $request)
     {
 
-        $message = [];
         DB::beginTransaction();
 
         try {
@@ -71,14 +95,12 @@ class InvoiceService
                 'amount' => $request->input('amount'),
             ]);
 
-            array_push($message, 'Invoice Created ' . $invoice->id);
 
             self::createTransactions(
                 $request->input('transactions'),
                 $invoice->id,
             );
 
-            array_push($message, 'Transactions Created');
 
             self::createPaymentVoucher(
                 $request->input('transactions'),
@@ -86,7 +108,6 @@ class InvoiceService
                 $invoice->customer_id,
             );
 
-            array_push($message, 'Payment Voucher Created');
 
             self::createReceiptVoucher(
                 $invoice->id,
@@ -95,12 +116,11 @@ class InvoiceService
                 $invoice->amount,
             );
 
-            array_push($message, 'REceipt Vouchers Created');
 
             DB::commit();
         } catch (\Exception $ex) {
             DB::rollBack();
-            return ['error' => $ex, 'message' => $message];
+            return ['error' => $ex];
             // return ['error' => $ex];
         }
 
@@ -172,7 +192,7 @@ class InvoiceService
         $amount
     ) {
 
-        if (is_null($paymentMethod)) {
+        if (is_null($paymentMethod) || $paymentMethod == 0) {
             return ['status' => 'Udhaar Payment Created'];
         }
 
