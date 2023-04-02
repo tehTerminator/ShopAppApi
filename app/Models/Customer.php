@@ -12,10 +12,14 @@ class Customer extends Model {
      * @var array
      */
     protected $fillable = [
-        'title', 'address', 'mobile'
+        'title', 'address', 'mobile', 'ledger_id'
     ];
 
     public function invoices() {
         return $this->hasMany(Invoice::class);
+    }
+
+    public function ledger() {
+        return $this->hasOne(Ledger::class);
     }
 }
