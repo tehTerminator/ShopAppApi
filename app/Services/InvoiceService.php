@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use App\Models\Voucher;
 use App\Models\PaymentInfo;
 use App\Services\CustomerService;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -83,7 +84,6 @@ class InvoiceService
 
     public static function createNewInvoice(Request $request)
     {
-
         DB::beginTransaction();
 
         try {
@@ -108,7 +108,6 @@ class InvoiceService
                 $invoice->customer_id,
             );
 
-
             self::createReceiptVoucher(
                 $invoice->id,
                 $invoice->customer_id,
@@ -116,15 +115,13 @@ class InvoiceService
                 $invoice->amount,
             );
 
-
             DB::commit();
+            return ['status' => 'success'];
         } catch (\Exception $ex) {
             DB::rollBack();
             return ['error' => $ex];
             // return ['error' => $ex];
         }
-
-        return ['status' => 'success'];
     }
 
     private static function createTransactions(
@@ -134,8 +131,8 @@ class InvoiceService
         for ($i = 0; $i < count($transactions); $i++) {
             $transactions[$i]['invoice_id'] = $invoice_id;
             $transactions[$i]['user_id'] = Auth::user()->id;
-            unset($transactions[$i]['created_at']);
-            unset($transactions[$i]['updated_at']);
+            $transactions[$i]['created_at'] = date('Y-m-d H:i:s');
+            $transactions[$i]['updated_at'] = date('Y-m-d H:i:s');
         }
         Transaction::insert($transactions);
     }
@@ -165,7 +162,9 @@ class InvoiceService
                     'dr' => $customer_ledger,
                     'narration' => 'Payment Invoice #' . $invoice_id,
                     'amount' => self::getAmount($transactions[$i]),
-                    'user_id' => Auth::user()->id
+                    'user_id' => Auth::user()->id,
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
                 ]);
             } else {
                 $saleAmount += self::getAmount($transactions[$i]);
@@ -178,11 +177,20 @@ class InvoiceService
                 'dr' => $customer_ledger,
                 'narration' => 'Sale Invoice #' . $invoice_id,
                 'amount' => $saleAmount,
-                'user_id' => Auth::user()->id
+                'user_id' => Auth::user()->id,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s')
             ]);
         }
 
-        Voucher::insert($vouchers);
+        $result = Voucher::insert($vouchers);
+
+        if (!$result) {
+            throw new Exception('Unable to Create Payment Vouchers');
+        }
+
+
+        // return $vouchers;
     }
 
     private static function createReceiptVoucher(

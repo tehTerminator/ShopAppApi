@@ -34,6 +34,8 @@ class AuthServiceProvider extends ServiceProvider
             if ($request->header('Authorization')) {
                 return User::where('token', $request->header('Authorization'))->first();
             }
+
+            // return User::find(1);
         });
     }
 }
