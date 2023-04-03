@@ -17,9 +17,9 @@ class GeneralItemService
 
     public static function getItems()
     {
-        $products = Product::select('id', 'title', 'rate')->get();
-        $ledgers = Ledger::select('id', 'title')->whereIn('kind', ['BANK', 'CASH', 'WALLET'])->get();
-        $bundles = PosItem::select('id', 'title', 'rate')->get();
+        $products = Product::select('id', 'title', 'rate', 'created_at', 'updated_at')->get();
+        $ledgers = Ledger::select('id', 'title', 'created_at', 'updated_at')->whereIn('kind', ['BANK', 'CASH', 'WALLET'])->get();
+        $bundles = PosItem::select('id', 'title', 'rate', 'created_at', 'updated_at')->get();
 
         $items = [];
 
