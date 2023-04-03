@@ -29,7 +29,7 @@ class Transaction extends Model {
         'rate' => 'double',
         'discount' => 'double',
         'user_id' => 'integer',
-    ]
+    ];
 
     public function invoice() {
         return $this->hasOne(Invoice::class, 'id', 'invoice_id');

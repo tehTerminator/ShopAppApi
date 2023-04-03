@@ -15,6 +15,13 @@ class Voucher extends Model {
         'cr', 'dr', 'narration', 'amount', 'user_id'
     ];
 
+    protected $casts = [
+        'cr' => 'integer',
+        'dr' => 'integer',
+        'amount' => 'double',
+        'user_id' => 'integer'
+    ];
+
     public function creditor() {
         return $this->hasOne(Ledger::class, 'id', 'cr');
     }
