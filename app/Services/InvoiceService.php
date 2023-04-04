@@ -100,8 +100,7 @@ class InvoiceService
                 $request->input('transactions'),
                 $invoice->id,
             );
-
-
+            
             self::createPaymentVoucher(
                 $request->input('transactions'),
                 $invoice->id,
@@ -179,7 +178,8 @@ class InvoiceService
                 'amount' => $saleAmount,
                 'user_id' => Auth::user()->id,
                 'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s')
+                'updated_at' => date('Y-m-d H:i:s'),
+                'immutable' => true
             ]);
         }
 
@@ -210,7 +210,8 @@ class InvoiceService
             'dr' => $paymentMethod,
             'narration' => 'Receipt Invoice #' . $invoice_id,
             'amount' => $amount,
-            'user_id' => Auth::user()->id
+            'user_id' => Auth::user()->id,
+            'immutable' => true
         ]);
 
         self::createPaymentInfo($invoice_id, $voucher->id, $amount, Auth::user()->id);
@@ -228,9 +229,19 @@ class InvoiceService
 
     public static function delete(int $invoice_id)
     {
-        Transaction::where('invoice_id', $invoice_id)->delete();
-        Invoice::find($invoice_id)->delete();
-        Voucher::where('narration', 'LIKE', '%' . $invoice_id)->delete();
+        DB::beginTransaction();
+
+        try {
+            PaymentInfo::where('invoice_id', $invoice_id)->delete();
+            Transaction::where('invoice_id', $invoice_id)->delete();
+            Invoice::find($invoice_id)->delete();
+            Voucher::where('narration', 'LIKE', '%' . $invoice_id)->delete();
+            DB::commit();
+            return ['status' => "Invoice #$invoice_id deleted Successfully"];
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return ['status' => $ex];
+        }
     }
 
     private static function getAmount($transaction)
