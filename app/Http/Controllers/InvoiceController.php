@@ -49,8 +49,7 @@ class InvoiceController extends Controller
     }
 
     public function delete(int $id) {
-        InvoiceService::delete($id);
-        return response()->json(['message' => 'Invoice #' . $id . 'Deleted Successfully']);
+        return response()->json(InvoiceService::delete($id));
     }
 
     public function selectPaymentInfo(Request $request) {
