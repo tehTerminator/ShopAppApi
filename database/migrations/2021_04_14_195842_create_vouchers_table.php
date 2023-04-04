@@ -23,7 +23,7 @@ class CreateVouchersTable extends Migration
             $table->double('amount')->default(0.00);
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->boolean('state')->default(true);
+            $table->boolean('immutable')->default(false);
             $table->timestamps();
         });
     }

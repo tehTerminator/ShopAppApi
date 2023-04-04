@@ -17,6 +17,7 @@ class CreateLedgersTable extends Migration
             $table->id();
             $table->string('title')->unique();
             $table->enum('kind', ['BANK', 'WALLET', 'CASH', 'PAYABLE', 'RECEIVABLE', 'EXPENSE', 'INCOME']);
+            
             $table->timestamps();
         });
     }
