@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Voucher;
 use App\Services\VoucherService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class VoucherController extends Controller
 {
@@ -16,10 +15,7 @@ class VoucherController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-        $this->service = new VoucherService();
-    }
+    public function __construct(){}
 
     public function select(Request $request) {
         $this->validate($request, [
@@ -35,11 +31,11 @@ class VoucherController extends Controller
             'ledger' => 'required|integer|min:1'
         ]);
 
-        $this->ledger = $request->query('ledger');
+        $ledger = $request->query('ledger');
         $from_date = $request->query('fromDate');
         $to_date = $request->query('toDate', $from_date);
 
-        $response = $this->service->select($this->ledger, $from_date, $to_date);
+        $response = VoucherService::select($ledger, $from_date, $to_date);
         return response()->json($response);
     }
 
@@ -50,7 +46,7 @@ class VoucherController extends Controller
             'narration' => 'string',
             'amount' => 'required|numeric',
         ]);
-        $voucher = $this->service->create($request->all());
+        $voucher = VoucherService::create($request->all());
         return response()->json($voucher);
     }
 
@@ -62,6 +58,18 @@ class VoucherController extends Controller
             'narration' => 'string',
             'amount' => 'required|numeric',
         ]);
-        $this->service->update($request->all());
+        
+        try {
+            $response = VoucherService::update($request->all());
+        } catch (\Exception $ex) {
+            return response($ex->getMessage(), 401);
+        }
+
+        return response()->json($response);
+    }
+
+    public function dayBook(Request $request) {
+        $date = $request->query('date');
+        return VoucherService::dayBook($date);
     }
 }
