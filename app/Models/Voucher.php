@@ -12,7 +12,11 @@ class Voucher extends Model {
      * @var array
      */
     protected $fillable = [
-        'cr', 'dr', 'narration', 'amount', 'user_id'
+        'cr', 'dr', 'narration', 'amount', 'user_id', 'immutable'
+    ];
+
+    protected $hidden = [
+        'immutable'
     ];
 
     protected $casts = [
