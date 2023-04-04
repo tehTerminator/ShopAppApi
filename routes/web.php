@@ -46,11 +46,7 @@ $router->group(['middleware'=>'auth'], function() use ($router) {
     $router->post('balance/update', ['uses'=>'LedgerController@autoUpdateBalance']);
     $router->get('users', function() {return User::all('id', 'displayName');});
     $router->get('generalItems', ['uses' => 'ProductController@getGeneralItems']);
-
-    $router->get('day-book', function(Request $request) {
-        $dayBook = DB::select('call tallyEntries(?)', [$request->query('date')]);
-        return response()->json($dayBook);
-    });
+    $router->get('day-book', ['uses' => 'VoucherController@dayBook']);
 });
 
 $router->group(['prefix'=>'users'], function() use ($router) {
@@ -122,7 +118,7 @@ $router->group(['prefix'=>'customers', 'middleware'=>'auth'], function() use ($r
     });
 });
 
-$router->group(['prefix'=>'invoices'], function() use ($router) {
+$router->group(['prefix'=>'invoices', 'middleware' => 'auth'], function() use ($router) {
     $router->get('', ['uses' => 'InvoiceController@select']);
     $router->put('create', ['uses' => 'InvoiceController@create']);
     $router->post('transactions', ['uses' => 'InvoiceController@createTransactions']);
