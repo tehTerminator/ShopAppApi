@@ -2,38 +2,29 @@
 
 namespace App\Services;
 
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
 
 class ProductGraphDataService {
-    private $date;
 
-    function __construct()
-    {
-        $this->date = Carbon::now();
-    }
+    function __construct(){}
 
     public function productWiseSalesCount($date) {
-        $this->date = $date;
-        $response = Cache::remember('productWiseSaleCount' . $this->date, 300, function() {
+        $response = Cache::remember('productWiseSaleCount' . $date, 30, function() use ($date) {
             return Transaction::select(
                 DB::raw(
-                    "sum(
-                        calcTransactionAmount(
-                            `transactions`.`quantity`, `transactions`.`rate`, `transactions`.`discount`
-                        )
-                    ) as 'value'"),
+                    "FLOOR(sum(
+                        `transactions`.`quantity` * `transactions`.`rate` * ( 1 - `transactions`.`discount` / 100)
+                    )) as 'value'"),
                 DB::raw("products.title as 'name'")
             )
-            ->whereDate('transactions.created_at', $this->date)
+            ->whereDate('transactions.created_at', $date)
             ->where('item_type', 'PRODUCT')
-            ->join('products', 'products.id', '=', 'transactions.item_id')
+            ->leftJoin('products', 'products.id', '=', 'transactions.item_id')
             ->groupBy('name')
             ->get();
         });
-
         return $response;
     }
 }
