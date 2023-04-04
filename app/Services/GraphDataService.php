@@ -95,7 +95,7 @@ class GraphDataService
         $graphData = Cache::remember('operatorComparison', 43200, function () {
             $data = [];
 
-            $operators = User::whereIn('id', [2, 5, 6, 7, 8])->get();
+            $operators = User::whereIn('id', '>', 1)->get();
 
             foreach ($operators as $operator) {
                 $operatorData = [
@@ -126,12 +126,9 @@ class GraphDataService
         $row = Transaction::select(
             DB::raw("
             sum(
-                calcTransactionAmount(
-                    transactions.quantity, 
-                    transactions.rate, 
-                    transactions.discount
-                )
-            ) as value"),
+                transaction.quantity * transaction.rate * ( 1 - transaction.discount /100)
+            )
+            as value"),
             DB::raw("date(transactions.created_at) as name"),
         )->whereDate('created_at', $theDate)
             ->where('user_id', $id)
