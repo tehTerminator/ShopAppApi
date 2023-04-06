@@ -159,6 +159,7 @@ class InvoiceService
                 array_push($vouchers, [
                     'cr' => $transactions[$i]['item_id'],
                     'dr' => $customer_ledger,
+                    'immutable' => true,
                     'narration' => 'Payment Invoice #' . $invoice_id,
                     'amount' => self::getAmount($transactions[$i]),
                     'user_id' => Auth::user()->id,
@@ -176,6 +177,7 @@ class InvoiceService
                 'dr' => $customer_ledger,
                 'narration' => 'Sale Invoice #' . $invoice_id,
                 'amount' => $saleAmount,
+                'immutable' => true,
                 'user_id' => Auth::user()->id,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
@@ -208,10 +210,10 @@ class InvoiceService
         $voucher = Voucher::create([
             'cr' => $customer_ledger,
             'dr' => $paymentMethod,
+            'immutable' => true,
             'narration' => 'Receipt Invoice #' . $invoice_id,
             'amount' => $amount,
             'user_id' => Auth::user()->id,
-            'immutable' => true
         ]);
 
         self::createPaymentInfo($invoice_id, $voucher->id, $amount, Auth::user()->id);
@@ -219,12 +221,16 @@ class InvoiceService
 
     public static function createPaymentInfo(int $invoice_id, int $voucher_id, float $amount)
     {
-        PaymentInfo::create([
+        $result = PaymentInfo::create([
             'invoice_id' => $invoice_id,
             'user_id' => Auth::user()->id,
             'voucher_id' => $voucher_id,
             'amount' => $amount
         ]);
+
+        if (empty($result)) {
+            throw new Exception('Unable to Create PaymentInfo');
+        }
     }
 
     public static function delete(int $invoice_id)
