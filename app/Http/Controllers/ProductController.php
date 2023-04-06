@@ -29,6 +29,7 @@ class ProductController extends Controller
             'title' => $request->input('title'),
             'rate' => $request->input('rate')
         ]);
+        Cache::forget('products');
         return response()->json($product);
     }
 
@@ -63,7 +64,7 @@ class ProductController extends Controller
     }
 
     public function getGeneralItems() {
-        $generalItems = Cache::remember('generalItem', 3600, function() {
+        $generalItems = Cache::remember('generalItem', 600, function() {
             return GeneralItemService::getItems();
         });
 
