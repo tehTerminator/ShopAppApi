@@ -41,23 +41,24 @@ class UserController extends Controller
         return response('Invalid Password', 401);
     }
 
-    public function register(Request $request) {
-        $this->validate($request, [
-            'displayName' => 'required|min:3|max:50',
-            'username' => 'required|min:3|max:50|unique:users|alpha_num',
-            'password' => 'required|min:3|max:50|alpha_num'
-        ]);
+    public function register() {
+        return response('Registration Closed', 401);
+        // $this->validate($request, [
+        //     'displayName' => 'required|min:3|max:50',
+        //     'username' => 'required|min:3|max:50|unique:users|alpha_num',
+        //     'password' => 'required|min:3|max:50|alpha_num'
+        // ]);
         
 
-        $hashed_password = Hash::make($request->input('password'));
+        // $hashed_password = Hash::make($request->input('password'));
 
-        User::create([
-            'displayName' => $request->input('displayName'),
-            'username' => $request->input('username'),
-            'password' => $hashed_password
-        ]);
+        // User::create([
+        //     'displayName' => $request->input('displayName'),
+        //     'username' => $request->input('username'),
+        //     'password' => $hashed_password
+        // ]);
 
-        return response()->json(['message'=>'User Registered Successfully']);
+        // return response()->json(['message'=>'User Registered Successfully']);
 
     }
 
