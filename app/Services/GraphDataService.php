@@ -125,8 +125,10 @@ class GraphDataService
         $theDate = Carbon::now()->subDays($days);
         $row = Transaction::select(
             DB::raw("
-            sum(
-                transaction.quantity * transaction.rate * ( 1 - transaction.discount /100)
+            FLOOT(
+                SUM(
+                    `transactions`.`quantity` * `transactions`.`rate` * ( 1 - `transactions`.`discount` / 100 )
+                )
             )
             as value"),
             DB::raw("date(transactions.created_at) as name"),
