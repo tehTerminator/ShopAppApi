@@ -25,16 +25,14 @@ class UserReportController extends Controller
     public function userWiseInvoiceCount(Request $request)
     {
 
-        if ($request->has('date')) {
-            $this->date = $request->input('date');
-        }
+        $date = $request->input('date', Carbon::now());
 
-        $response = Cache::remember('userWiseInvoiceCount' . $this->date, 300, function () {
+        $response = Cache::remember('userWiseInvoiceCount' . $this->date, 300, function () use ($date){
             return Invoice::select(
                 DB::raw('count(invoices.id) as value'),
                 DB::raw('users.displayName as name'),
             )
-                ->whereDate('invoices.created_at', $this->date)
+                ->whereDate('invoices.created_at', $date)
                 ->join('users', 'users.id', '=', 'invoices.user_id')
                 ->groupBy('name')
                 ->get();
@@ -46,20 +44,20 @@ class UserReportController extends Controller
     public function userWisePaymentCount(Request $request)
     {
 
-        if ($request->has('date')) {
-            $this->date = $request->input('date');
-        }
+        $date = $request->input('date', Carbon::now());
 
-        $response = Cache::remember('userWisePaymentCount' . $this->date, 300, function () {
+        $response = Cache::remember('userWisePaymentCount' . $date, 300, function () use ($date) {
             return Transaction::select(
                 DB::raw(
-                    "sum(
-                    `transactions`.`quantity` * `transactions`.`rate` * (1 - `transactions`.`discount`)
-                ) as 'value'"
+                    "FLOOR(
+                        SUM(
+                            transactions.quantity * transactions.rate * (1 - transactions.discount / 100)
+                        ) 
+                    ) as 'value'"
                 ),
                 DB::raw("users.displayName as 'name'"),
             )
-                ->whereDate('transactions.created_at', $this->date)
+                ->whereDate('transactions.created_at', $date)
                 ->where('transactions.item_type', 'LEDGER')
                 ->join('users', 'users.id', '=', 'transactions.user_id')
                 ->groupBy('name')
@@ -74,20 +72,19 @@ class UserReportController extends Controller
     public function userWiseSalesCount(Request $request)
     {
 
-        if ($request->has('date')) {
-            $this->date = $request->input('date');
-        }
+        $date = $request->input('date', Carbon::now());
 
-        $response = Cache::remember('userWiseSalesCount' . $this->date, 300, function () {
+        $response = Cache::remember('userWiseSalesCount' . $date, 300, function () use ($date) {
             return Transaction::select(
                 DB::raw(
-                    "sum(
-                    `transactions`.`quantity` * `transactions`.`rate` * (1 - `transactions`.`discount`)
-                ) as 'value'"
+                    "FLOOR(
+                        SUM(
+                            transactions.quantity * transactions.rate * ( 1 - transactions.discount / 100)
+                )) as 'value'"
                 ),
                 DB::raw("users.displayName as 'name'"),
             )
-                ->whereDate('transactions.created_at', $this->date)
+                ->whereDate('transactions.created_at', $date)
                 ->where('transactions.item_type', 'PRODUCT')
                 ->join('users', 'users.id', '=', 'transactions.user_id')
                 ->groupBy('name')
