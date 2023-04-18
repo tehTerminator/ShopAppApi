@@ -11,16 +11,12 @@ use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Voucher;
 
-class GraphDataService
-{
-    private $date;
+class GraphDataService {
 
-    public function __construct()
-    {
-        $this->date = Carbon::now();
-    }
 
-    public function monthlyInvoiceAmount()
+    public function __construct(){}
+
+    public static function monthlyInvoiceAmount()
     {
         $response = Cache::remember('monthlyStats', 43200, function () {
             $date = Carbon::now()->subDays(15);
@@ -37,7 +33,7 @@ class GraphDataService
         return $response;
     }
 
-    public function incomeVsExpenses()
+    public static function incomeVsExpenses()
     {
         $graphData = Cache::remember('incomeExpense', 43200, function () {
             $data = [
@@ -54,8 +50,8 @@ class GraphDataService
             $incomeLedgers = Ledger::where('kind', 'INCOME')->pluck('id')->toArray();
             $expenseLedgers = Ledger::where('kind', 'EXPENSE')->pluck('id')->toArray();
 
-            $data[0]['series'] = $this->cumulateSeries('cr', $incomeLedgers);
-            $data[1]['series'] = $this->cumulateSeries('dr', $expenseLedgers);
+            $data[0]['series'] = self::cumulateSeries('cr', $incomeLedgers);
+            $data[1]['series'] = self::cumulateSeries('dr', $expenseLedgers);
 
             return $data;
         });
@@ -63,18 +59,20 @@ class GraphDataService
         return $graphData;
     }
 
-    private function cumulateSeries($crOrDr, $idList) {
+    private static function cumulateSeries($crOrDr, $idList)
+    {
         $response = [];
         $total = 0;
-        for($i = 30; $i > 0; $i--) {
+        for ($i = 30; $i > 0; $i--) {
             $forDate = Carbon::now()->subDays($i)->format('Y-m-d');
-            $total += $this->getAmountForDate($crOrDr, $idList, $forDate);
+            $total += self::getAmountForDate($crOrDr, $idList, $forDate);
             array_push($response, ["name" => $forDate, "value" => $total]);
         }
         return $response;
     }
 
-    private function getAmountForDate($crOrDr, $idList, $date) {
+    private static function getAmountForDate($crOrDr, $idList, $date)
+    {
         $voucher = Voucher::select(
             DB::raw("sum(amount) as 'value'"),
             DB::raw("DATE_FORMAT(created_at, '%Y-%m-%d') as name")
@@ -84,23 +82,23 @@ class GraphDataService
             ->groupBy('name')
             ->orderBy('name', 'ASC')
             ->first();
-        if(empty($voucher)) {
+        if (empty($voucher)) {
             return 0;
         }
         return $voucher->value;
     }
 
-    public function operatorMonthlyComparison()
+    public static function operatorMonthlyComparison()
     {
         $graphData = Cache::remember('operatorComparison', 43200, function () {
             $data = [];
 
-            $operators = User::whereIn('id', '>', 1)->get();
+            $operators = User::where('id', '>', 1)->get();
 
             foreach ($operators as $operator) {
                 $operatorData = [
                     'name' => $operator->displayName,
-                    'series' => $this->cumulateData($operator->id)
+                    'series' => self::cumulateData($operator->id)
                 ];
                 array_push($data, $operatorData);
             }
@@ -109,28 +107,25 @@ class GraphDataService
         return $graphData;
     }
 
-    private function cumulateData($id) {
+    private static function cumulateData($id) {
         $response = [];
         $total = 0;
         for($i = 30; $i > 0; $i--) {
             $forDate = Carbon::now()->subDays($i)->format('Y-m-d');
-            $total += $this->operatorDailyReport($id, $i);
+            $total += self::operatorDailyReport($id, $i);
             array_push($response, ["name" => $forDate, "value" => $total]);
         }
         return $response;
     }
 
-    private function operatorDailyReport($id, $days)
+    private static function operatorDailyReport($id, $days)
     {
         $theDate = Carbon::now()->subDays($days);
         $row = Transaction::select(
             DB::raw("
-            FLOOT(
-                SUM(
-                    `transactions`.`quantity` * `transactions`.`rate` * ( 1 - `transactions`.`discount` / 100 )
-                )
-            )
-            as value"),
+            sum(
+                transactions.quantity * transactions.rate * (1 - transactions.discount / 100)
+            ) as amount"),
             DB::raw("date(transactions.created_at) as name"),
         )->whereDate('created_at', $theDate)
             ->where('user_id', $id)
@@ -142,6 +137,6 @@ class GraphDataService
         if(empty($row)) {
             return 0;
         }
-        return $row->value;
+        return $row->amount;
     }
 }

@@ -28,17 +28,18 @@ class HomeController extends Controller
     }
 
     public function monthlyStats() {
-        $service = new GraphDataService();
-        return response()->json($service->monthlyInvoiceAmount());
+        return response()->json(GraphDataService::monthlyInvoiceAmount());
     }
 
     public function incomeExpense() {
-        $service = new GraphDataService();
-        return response()->json($service->incomeVsExpenses());
+        return response()->json(GraphDataService::incomeVsExpenses());
     }
 
     public function operatorPerformance() {
-        $service = new GraphDataService();
-        return response()->json($service->operatorMonthlyComparison());
+        return response()->json(GraphDataService::operatorMonthlyComparison());
+    }
+
+    public function testOperatorPerformance() {
+        return response()->json(GraphDataService::operatorDailyReport(2, 15));
     }
 }
