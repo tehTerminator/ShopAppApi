@@ -34,12 +34,8 @@ class HomeController extends Controller
     public function incomeExpense() {
         return response()->json(GraphDataService::incomeVsExpenses());
     }
-
+    
     public function operatorPerformance() {
         return response()->json(GraphDataService::operatorMonthlyComparison());
-    }
-
-    public function testOperatorPerformance() {
-        return response()->json(GraphDataService::operatorDailyReport(2, 15));
     }
 }
