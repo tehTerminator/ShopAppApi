@@ -9,7 +9,7 @@ class ValidationService
 {
     // Define specific validation rules based on the table and operation type
 
-    function validateModel(Request $request, $table, $operationType = 'create')
+    public static function validateModel(Request $request, $table, $operationType = 'create')
     {
         // Get the validation rules for the specified table and operation type
         $validationRules = include('./../Models/Validation/' . $table . 'ValidationRules.php');
