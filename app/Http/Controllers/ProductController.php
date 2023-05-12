@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Services\GeneralItemService;
+use App\Services\ValidationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use App\Services\GeneralItemService;
 
 class ProductController extends Controller
 {
@@ -20,46 +21,25 @@ class ProductController extends Controller
     }
 
     public function create(Request $request) {
-        $this->validate($request, [
-            'title' => 'required|max:50|unique:products|string',
-            'rate' => 'required|numeric|min:1'
-        ]);
-
-        $product = Product::create([
-            'title' => $request->input('title'),
-            'rate' => $request->input('rate')
-        ]);
+        $this->validateRequest($request, 'create');
+        $product = Product::create($request->only(['title', 'rate']));
         Cache::forget('products');
         return response()->json($product);
     }
 
     public function update(Request $request) {
-        $this->validate($request, [
-            'id' => 'required|integer|min:1',
-            'title' => 'required|max:50|string',
-            'rate' => 'required|numeric|min:1',
-        ]);
-
+        $this->validateRequest($request, 'update');
         $product = Product::findOrFail($request->input('id'));
-        $product->title = $request->input('title');
-        $product->rate = $request->input('rate');
+        $product->update($request->only(['title', 'rate']));
         $product->save();
-
         Cache::forget('products');
-
         return response()->json($product);
     }
 
     public function delete(Request $request) {
-        $this->validate($request, [
-            'id' => 'required|integer|min:1'
-        ]);
-
-        $product = Product::findOrFail($request->input('id'));
-        $product->delete();
-
+        $this->validateRequest($request, 'delete');
+        Product::findOrFail($request->input('id'))->delete();
         Cache::forget('products');
-
         return response()->json(['message'=>'Product Deleted Successfully']);
     }
 
@@ -67,7 +47,17 @@ class ProductController extends Controller
         $generalItems = Cache::remember('generalItem', 600, function() {
             return GeneralItemService::getItems();
         });
-
         return response()->json($generalItems);
+    }
+
+
+    private function validateRequest(Request $request, $requestType = 'create') {
+        $validated = ValidationService::validateModel($request, 'products', $requestType);
+
+        if (!$validated) {
+            return response('Invalid Data Received', 201);
+        }
+
+        return;
     }
 }
