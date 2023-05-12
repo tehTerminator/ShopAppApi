@@ -27,9 +27,7 @@ class CustomerController extends Controller
     public function create(Request $request)
     {
         $this->validateRequest($request);
-
         $defaultCustomerId = CustomerService::getDefaultCustomer()->ledger_id;
-
         $customer = Customer::create(
             [
                 'title' => $request->input('title'),
