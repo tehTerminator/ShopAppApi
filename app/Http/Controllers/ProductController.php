@@ -21,7 +21,7 @@ class ProductController extends Controller
     }
 
     public function create(Request $request) {
-        $this->validateRequest($request, 'create');
+        $this->validateRequest($request);
         $product = Product::create($request->only(['title', 'rate']));
         Cache::forget('products');
         return response()->json($product);
