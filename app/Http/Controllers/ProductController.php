@@ -42,7 +42,7 @@ class ProductController extends Controller
         Cache::forget('products');
         return response()->json(['message'=>'Product Deleted Successfully']);
     }
-
+    
     public function getGeneralItems() {
         $generalItems = Cache::remember('generalItem', 600, function() {
             return GeneralItemService::getItems();

@@ -12,6 +12,5 @@ return [
         'title' => 'required|string',
         'address' => 'required|string',
         'mobile' => 'regex:/^[6-9][0-9]{9}$/'
-    ],
-    
+    ],   
 ]

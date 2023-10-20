@@ -17,4 +17,20 @@ class Stock extends Model {
     protected $hidden = [
         'imageUrl' // Not Implemented Yet
     ];
+
+    /**
+     * Increases the Quantity by $amount
+     */
+    function increaseQuantity($amount) {
+        $this->quantity += $amount;
+        $this->save();
+    }
+
+    /**
+     * Decreases the Quantity by $amount
+     */
+    function decreaseQuantity($amount) {
+        $this->quantity -= $amount;
+        $this->save();
+    }
 }
